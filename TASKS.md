@@ -159,7 +159,7 @@
 
 ## TASK-006 — SQLite Database and Repository
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Persist, retrieve, filter, paginate, and atomically update incident records and analyses.
 
@@ -472,7 +472,7 @@
 | TASK-003 | RSS HTTP Client | DONE |
 | TASK-004 | Feed Parser | DONE |
 | TASK-005 | Incident Normalization and Identity | DONE |
-| TASK-006 | SQLite Database and Repository | TODO |
+| TASK-006 | SQLite Database and Repository | DONE |
 | TASK-007 | LLM Client Interface and Prompt Templates | TODO |
 | TASK-008 | Decision Agent, Validation, and Fallback | TODO |
 | TASK-009 | Incident Processing Service | TODO |

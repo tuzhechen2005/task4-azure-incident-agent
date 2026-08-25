@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-005 — Incident Normalization and Identity (checkpoint)
-- Completed tasks: 5
-- Remaining tasks: 11
+- Current task: TASK-006 — SQLite Database and Repository (checkpoint)
+- Completed tasks: 6
+- Remaining tasks: 10
 
 ## Task Progress
 
@@ -99,9 +99,27 @@
 - Full suite: PASS — 51 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (15 source files).
 - Acceptance criteria: PASS — stable source/fallback identity, material change detection, optional values, conservative extraction, four statuses, validation, and UTC output verified.
+- Commit: `eb1943e` — `feat(ingestion): complete TASK-005 incident normalization`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-006
+
+### TASK-006 — SQLite Database and Repository
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/storage/__init__.py`, `app/storage/database.py`, `app/storage/repository.py`, `tests/unit/test_repository.py`, `TASKS.md`, `progress.md`
+- RED tests: Initialization, insert/get, reopen persistence, uniqueness, rollback, changed update, empty/filter/order list, pagination, stats, and missing lookup in `tests/unit/test_repository.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_repository.py` failed during collection because `app.storage` did not exist, confirming the intended missing persistence layer.
+- GREEN implementation: Added idempotent SQLite schema initialization and a validated repository with atomic upsert, unique IDs, lookup, deterministic filtered pagination, statistics, and validation on reads/writes.
+- REFACTOR: Kept connection lifecycle, schema initialization, record validation, query construction, row decoding, and time serialization as separate focused boundaries.
+- Focused tests: PASS — 12 tests.
+- Full suite: PASS — 63 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (19 source files).
+- Acceptance criteria: PASS — reopen persistence, unique IDs, atomic validation/rollback, updates, filters, order, pagination, stats, not-found, and corrupt-read validation verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-006
+- Next task: TASK-007
 
 ## Problems, Pitfalls and Solutions
 
@@ -139,6 +157,18 @@
 - Solution: Join inline fragments directly while inserting explicit separators only for block-level elements. The subsequent type gate also found Pydantic's runtime URL coercion was not visible to mypy, so parser construction was routed through the validated boundary instead of suppressed.
 - Files/tests: `app/ingestion/parser.py`, `tests/unit/test_parser.py`
 - Prevention: Keep fixtures containing both inline formatting and block markup in parser coverage.
+- Status: RESOLVED
+
+### P-004 — Repository test retained an unused import
+
+- Occurred: 2026-08-25 (Asia/Shanghai)
+- Task: TASK-006
+- Symptom: Ruff reported `F401` for an unused `sqlite3` import after repository tests passed.
+- Root cause: The test plan initially anticipated direct SQLite exception assertions, but the final tests use the public database connection boundary instead.
+- Investigation: Ruff identified the exact unused import; no production code or behavior was affected.
+- Solution: Removed the unused import and reran all quality gates.
+- Files/tests: `tests/unit/test_repository.py`
+- Prevention: Run lint immediately after focused GREEN and remove scaffolding imports during refactor.
 - Status: RESOLVED
 
 ## Decisions and Assumptions
