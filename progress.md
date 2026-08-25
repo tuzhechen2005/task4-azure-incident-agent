@@ -297,8 +297,8 @@
 - Full suite: PASS — 147 Python tests in the project environment and 147 in a fresh temporary Python environment; 5 direct Node polling tests.
 - Lint/format/type checks: PASS — Ruff format/lint, mypy (45 source files), JavaScript syntax, and `git diff --check`.
 - Acceptance criteria: PASS — AC-001 through AC-018; fresh install, offline fixture pipeline, real local launch, dashboard/static assets, four APIs, filters/404, fallback health, safe operational logs, SQLite duplicate/restart persistence, graceful shutdown, secret/manifest scan, and archive audit.
-- Commit: Pending
-- Push: Pending
+- Commit: `0331dc3` — `docs(delivery): complete TASK-016 documentation audit`
+- Push: PASS — pushed to `origin/main`.
 - Next task: None
 
 ## Problems, Pitfalls and Solutions
@@ -376,6 +376,19 @@
 - Commit: `8440eea` — `fix(observability): report fallback runtime accurately`; pushed to `origin/main`.
 - Status: RESOLVED
 
+### P-007 — Archive tests assumed Git metadata was present
+
+- Occurred: 2026-08-25 (Asia/Shanghai)
+- Task: Final ZIP validation
+- Symptom: The ZIP manifest was clean, but two documentation tests failed after extraction because `git ls-files` cannot run without the intentionally excluded `.git` directory.
+- Root cause: Delivery checks assumed they always ran inside a Git working tree rather than a standalone archive.
+- Investigation: Extracted the generated ZIP into a fresh temporary directory and ran the complete suite there.
+- Solution: Use committed paths when Git metadata exists and a safe recursive archive scan otherwise, excluding only caches created by the running test process. The rebuilt ZIP then passed all 147 Python and 5 Node tests.
+- Files/tests: `tests/test_documentation.py`, extracted-ZIP full-suite validation
+- Prevention: Run the full suite from both a clone-style working tree and the final extracted archive.
+- Commit: `4032604` — `fix(delivery): support archive validation without Git metadata`; pushed to `origin/main`.
+- Status: RESOLVED
+
 ## Decisions and Assumptions
 
 ### D-001 — Initialize the empty repository on `main`
@@ -404,5 +417,5 @@
 - Persistence and deduplication: PASS — two repeat seeds and a full application restart retained exactly 2 records.
 - Fallback and observability: PASS — health returned 200/degraded, database available, scheduler running, analysis mode fallback-only, and a safe fetch error; stage logs omitted exception details.
 - Acceptance checklist: PASS — AC-001 through AC-018 are checked in `SPEC.md`.
-- Delivery manifest/security: PASS — tracked-source and archive scans exclude `.env`, virtual environments, caches, databases, logs, reports/build outputs, and archives; common token patterns are absent.
+- Delivery manifest/security: PASS — tracked-source and archive scans exclude `.env`, virtual environments, caches, databases, logs, reports/build outputs, and archives; common token patterns are absent; the extracted ZIP passes all 147 Python and 5 Node tests without Git metadata.
 - Git/remote: PASS — independent task commits and final audit fix pushed to `origin/main`; final clean-tree check follows the TASK-016 documentation commit.
