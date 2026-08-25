@@ -354,7 +354,7 @@
 
 ## TASK-013 — Incident List and Detail APIs
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Implement paginated/filterable incident listing and incident detail endpoints.
 
@@ -479,7 +479,7 @@
 | TASK-010 | Scheduler and Lifecycle | DONE |
 | TASK-011 | FastAPI Application and Error Handling | DONE |
 | TASK-012 | Health and Statistics APIs | DONE |
-| TASK-013 | Incident List and Detail APIs | TODO |
+| TASK-013 | Incident List and Detail APIs | DONE |
 | TASK-014 | Dashboard Structure and Rendering | TODO |
 | TASK-015 | Dashboard Polling and End-to-End Integration | TODO |
 | TASK-016 | Documentation, Retrospective, and Delivery Audit | TODO |

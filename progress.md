@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-012 — Health and Statistics APIs (checkpoint)
-- Completed tasks: 12
-- Remaining tasks: 4
+- Current task: TASK-013 — Incident List and Detail APIs (checkpoint)
+- Completed tasks: 13
+- Remaining tasks: 3
 
 ## Task Progress
 
@@ -225,9 +225,27 @@
 - Full suite: PASS — 113 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (38 source files).
 - Acceptance criteria: PASS — schema-valid healthy/degraded/fallback/unavailable health and empty/seeded/timestamp statistics verified with correct status codes.
+- Commit: `f53a85e` — `feat(api): complete TASK-012 health and statistics`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-013
+
+### TASK-013 — Incident List and Detail APIs
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/api/routes.py`, `tests/integration/test_incidents_api.py`, `TASKS.md`, `progress.md`
+- RED tests: Empty/default/paginated/filterable lists, invalid queries, detail/not-found, and schema contracts in `tests/integration/test_incidents_api.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/integration/test_incidents_api.py` produced ten expected `404`/missing-envelope failures because list/detail routes did not exist.
+- GREEN implementation: Added validated incident list query parameters, deterministic repository pagination/filtering exposure, detail lookup, safe database failures, and standard `INCIDENT_NOT_FOUND` errors.
+- REFACTOR: Extended the narrow repository route protocol and centralized safe database error mapping while preserving FastAPI-native query validation.
+- Focused tests: PASS — 10 tests.
+- Full suite: PASS — 123 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (39 source files).
+- Acceptance criteria: PASS — empty/populated schemas, order, pagination, all filters and combination, invalid queries, detail, and standard request-ID 404 verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-013
+- Next task: TASK-014
 
 ## Problems, Pitfalls and Solutions
 

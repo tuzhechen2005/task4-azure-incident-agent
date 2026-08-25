@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Protocol, cast
+from typing import Annotated, Protocol, cast
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Path, Query, Request
 from fastapi.responses import JSONResponse
 
 from app.api.errors import ApplicationError
 from app.config import Settings
-from app.models.schemas import HealthResponse, StatsResponse
+from app.models.schemas import (
+    HealthResponse,
+    IncidentListResponse,
+    IncidentRecord,
+    IncidentStatus,
+    Severity,
+    StatsResponse,
+)
 
 
 class StatsRepository(Protocol):
@@ -19,6 +26,19 @@ class StatsRepository(Protocol):
         last_ingestion_at: object = None,
         last_successful_ingestion_at: object = None,
     ) -> StatsResponse: ...
+
+    def list_records(
+        self,
+        *,
+        page: int = 1,
+        page_size: int = 20,
+        severity: Severity | None = None,
+        status: IncidentStatus | None = None,
+        service: str | None = None,
+        region: str | None = None,
+    ) -> IncidentListResponse: ...
+
+    def get(self, incident_id: str) -> IncidentRecord | None: ...
 
 
 router = APIRouter(prefix="/api")
@@ -87,3 +107,54 @@ def stats(request: Request) -> StatsResponse:
             message="Stored incident statistics are temporarily unavailable.",
             status_code=503,
         ) from error
+
+
+@router.get("/incidents", response_model=IncidentListResponse)
+def list_incidents(
+    request: Request,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    severity: Severity | None = None,
+    status: IncidentStatus | None = None,
+    service: Annotated[str | None, Query(min_length=1, max_length=100)] = None,
+    region: Annotated[str | None, Query(min_length=1, max_length=100)] = None,
+) -> IncidentListResponse:
+    repository = cast(StatsRepository, request.app.state.repository)
+    try:
+        return repository.list_records(
+            page=page,
+            page_size=page_size,
+            severity=severity,
+            status=status,
+            service=service,
+            region=region,
+        )
+    except Exception as error:
+        raise ApplicationError(
+            code="DATABASE_UNAVAILABLE",
+            message="Stored incidents are temporarily unavailable.",
+            status_code=503,
+        ) from error
+
+
+@router.get("/incidents/{incident_id}", response_model=IncidentRecord)
+def get_incident(
+    request: Request,
+    incident_id: Annotated[str, Path(min_length=1, max_length=200)],
+) -> IncidentRecord:
+    repository = cast(StatsRepository, request.app.state.repository)
+    try:
+        record = repository.get(incident_id)
+    except Exception as error:
+        raise ApplicationError(
+            code="DATABASE_UNAVAILABLE",
+            message="Stored incidents are temporarily unavailable.",
+            status_code=503,
+        ) from error
+    if record is None:
+        raise ApplicationError(
+            code="INCIDENT_NOT_FOUND",
+            message="The requested incident was not found.",
+            status_code=404,
+        )
+    return record
