@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-008 — Decision Agent, Validation, and Fallback (checkpoint)
-- Completed tasks: 8
-- Remaining tasks: 8
+- Current task: TASK-009 — Incident Processing Service (checkpoint)
+- Completed tasks: 9
+- Remaining tasks: 7
 
 ## Task Progress
 
@@ -153,9 +153,27 @@
 - Full suite: PASS — 85 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (26 source files).
 - Acceptance criteria: PASS — LLM success/all severities, JSON/schema/ID failures, timeout/provider errors, one repair, exhausted repair, missing client, and deterministic active/resolved fallback verified.
+- Commit: `5ed1f1f` — `feat(agent): complete TASK-008 decision fallback`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-009
+
+### TASK-009 — Incident Processing Service
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/services/__init__.py`, `app/services/incident_service.py`, `tests/unit/test_incident_service.py`, `TASKS.md`, `progress.md`
+- RED tests: New/multiple incidents, unchanged skip, changed reanalysis, entry isolation, fetch preservation, empty feed, exact counts, and failed atomic update in `tests/unit/test_incident_service.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_incident_service.py` failed during collection because `app.services` did not exist, confirming the intended missing orchestration layer.
+- GREEN implementation: Added one-cycle fetch/parse/normalize flow, per-entry isolation, stable-ID fingerprint deduplication, conditional analysis, atomic record upsert, first-detection preservation, safe errors, and exact cycle counts.
+- REFACTOR: Isolated fetcher/analyzer protocols, UTC clock and safe error formatting; retained first detection time on material updates.
+- Focused tests: PASS — 9 tests.
+- Full suite: PASS — 94 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (29 source files).
+- Acceptance criteria: PASS — new/multiple/unchanged/changed flows, per-entry and fetch failure isolation, empty feeds, exact counts, no duplicate identities, and atomic failure preservation verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-009
+- Next task: TASK-010
 
 ## Problems, Pitfalls and Solutions
 

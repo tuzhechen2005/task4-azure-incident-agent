@@ -243,7 +243,7 @@
 
 ## TASK-009 — Incident Processing Service
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Orchestrate parse/normalize, deduplication, conditional analysis, atomic persistence, and per-cycle reporting.
 
@@ -475,7 +475,7 @@
 | TASK-006 | SQLite Database and Repository | DONE |
 | TASK-007 | LLM Client Interface and Prompt Templates | DONE |
 | TASK-008 | Decision Agent, Validation, and Fallback | DONE |
-| TASK-009 | Incident Processing Service | TODO |
+| TASK-009 | Incident Processing Service | DONE |
 | TASK-010 | Scheduler and Lifecycle | TODO |
 | TASK-011 | FastAPI Application and Error Handling | TODO |
 | TASK-012 | Health and Statistics APIs | TODO |
