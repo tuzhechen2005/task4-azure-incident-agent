@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-014 — Dashboard Structure and Rendering (checkpoint)
-- Completed tasks: 14
-- Remaining tasks: 2
+- Current task: TASK-015 — Dashboard Polling and End-to-End Integration (checkpoint)
+- Completed tasks: 15
+- Remaining tasks: 1
 
 ## Task Progress
 
@@ -261,9 +261,27 @@
 - Full suite: PASS — 130 tests.
 - Lint/format/type checks: PASS — JavaScript syntax, Ruff format/lint, and mypy (40 source files).
 - Acceptance criteria: PASS — complete mock mapping, loading/empty/error/stale/selected/no-selection states, no build step, safe text rendering, text-plus-color severity, focus/accessibility, and responsive layout verified statically.
+- Commit: `8806670` — `feat(dashboard): complete TASK-014 accessible rendering`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-015
+
+### TASK-015 — Dashboard Polling and End-to-End Integration
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `frontend/app.js`, `frontend/index.html`, `app/api/app.py`, `tests/frontend/test_dashboard_polling.js`, `tests/frontend/test_dashboard_polling.py`, `tests/integration/test_end_to_end.py`, `TASKS.md`, `progress.md`
+- RED tests: Initial/interval/non-overlap/error-retention/recovery polling in Node, fixture/fallback feed to API, unchanged duplicate, restart persistence, and configured dashboard root in integration tests.
+- RED result: Focused tests had two expected failures: Node could not import the DOM-only dashboard (`window is not defined`), and `GET /` returned `404` because no configured dashboard root existed; the four pipeline tests already passed.
+- GREEN implementation: Added an environment-configured dashboard root, portable/testable poll controller, initial and interval API refresh, non-overlap guard, last-good retention/stale recovery, manual retry, timer cleanup, and detail fetching on selection.
+- REFACTOR: Split the portable poll controller from browser DOM rendering, injected timers/fetch callbacks for deterministic Node tests, and centralized browser refresh success/error state transitions.
+- Focused tests: PASS — 5 Node polling tests and 5 end-to-end integration tests (6 pytest wrappers/tests total).
+- Full suite: PASS — 136 pytest tests plus 5 direct Node tests.
+- Lint/format/type checks: PASS — JavaScript syntax, Ruff format/lint, and mypy (42 source files).
+- Acceptance criteria: PASS — configured initial/interval polling, no overlap, last-good retention, stale recovery, timer cleanup, detail selection, full fixture/fallback pipeline, duplicate skip, restart persistence, and API-visible records/stats verified offline.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-015
+- Next task: TASK-016
 
 ## Problems, Pitfalls and Solutions
 

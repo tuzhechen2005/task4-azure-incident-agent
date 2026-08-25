@@ -9,6 +9,7 @@ from typing import Protocol
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.agents.decision_agent import DecisionAgent
@@ -106,6 +107,16 @@ def create_app(
     application.include_router(api_router)
 
     frontend_directory = Path(__file__).resolve().parents[2] / "frontend"
+
+    @application.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def dashboard() -> HTMLResponse:
+        template = (frontend_directory / "index.html").read_text(encoding="utf-8")
+        content = template.replace(
+            "__DASHBOARD_POLL_SECONDS__",
+            str(resolved_settings.dashboard_poll_seconds),
+        )
+        return HTMLResponse(content)
+
     application.mount(
         "/static",
         StaticFiles(directory=frontend_directory, check_dir=False),

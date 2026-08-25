@@ -409,11 +409,11 @@
 
 ## TASK-015 — Dashboard Polling and End-to-End Integration
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Connect the dashboard to APIs, verify periodic non-overlapping refresh, and exercise the complete local workflow with controlled dependencies.
 
-**Files:** `frontend/app.js`, `tests/frontend/test_dashboard_polling.*`, `tests/integration/test_end_to_end.py`, integration fixtures.
+**Files:** `frontend/app.js`, `tests/frontend/test_dashboard_polling.*`, `tests/integration/test_end_to_end.py`, integration fixtures, `frontend/index.html` and `app/api/app.py` (required to serve the dashboard root with its configured poll interval).
 
 **Dependencies:** TASK-009, TASK-010, TASK-012, TASK-013, TASK-014.
 
@@ -481,5 +481,5 @@
 | TASK-012 | Health and Statistics APIs | DONE |
 | TASK-013 | Incident List and Detail APIs | DONE |
 | TASK-014 | Dashboard Structure and Rendering | DONE |
-| TASK-015 | Dashboard Polling and End-to-End Integration | TODO |
+| TASK-015 | Dashboard Polling and End-to-End Integration | DONE |
 | TASK-016 | Documentation, Retrospective, and Delivery Audit | TODO |

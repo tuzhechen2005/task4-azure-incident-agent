@@ -1,6 +1,6 @@
 "use strict";
 
-(function () {
+(function (globalScope) {
   const severityLabels = Object.freeze({
     "SEV-1": "SEV-1 Critical",
     "SEV-2": "SEV-2 High",
@@ -8,7 +8,7 @@
     "SEV-4": "SEV-4 Low",
   });
 
-  const byId = (id) => document.getElementById(id);
+  const byId = (id) => globalScope.document.getElementById(id);
   const setText = (id, value, fallback = "—") => {
     byId(id).textContent = value === null || value === undefined || value === "" ? fallback : String(value);
   };
@@ -25,6 +25,49 @@
       stale: false,
       error: null,
     };
+  }
+
+  function createPollController({
+    fetchJson,
+    intervalMs,
+    onSuccess,
+    onError,
+    setIntervalFn = globalScope.setInterval.bind(globalScope),
+    clearIntervalFn = globalScope.clearInterval.bind(globalScope),
+  }) {
+    let refreshing = false;
+    let timer = null;
+
+    async function refresh() {
+      if (refreshing) return false;
+      refreshing = true;
+      try {
+        const [health, stats, listing] = await Promise.all([
+          fetchJson("/api/health"),
+          fetchJson("/api/stats"),
+          fetchJson("/api/incidents?page=1&page_size=100"),
+        ]);
+        onSuccess({ health, stats, incidents: listing.items || [] });
+        return true;
+      } catch (error) {
+        onError(error);
+        return false;
+      } finally {
+        refreshing = false;
+      }
+    }
+
+    async function start() {
+      if (timer === null) timer = setIntervalFn(() => refresh(), intervalMs);
+      return refresh();
+    }
+
+    function stop() {
+      if (timer !== null) clearIntervalFn(timer);
+      timer = null;
+    }
+
+    return Object.freeze({ start, stop, refresh, isRefreshing: () => refreshing });
   }
 
   const state = createInitialState();
@@ -73,7 +116,7 @@
   }
 
   function createCell(text, className = "") {
-    const cell = document.createElement("td");
+    const cell = globalScope.document.createElement("td");
     if (className) cell.className = className;
     cell.textContent = text;
     return cell;
@@ -82,12 +125,12 @@
   function renderIncidents(records) {
     const visible = transformIncidents(records, state.filters);
     const rows = visible.map((record) => {
-      const row = document.createElement("tr");
+      const row = globalScope.document.createElement("tr");
       const incident = record.incident;
       const analysis = record.analysis;
       row.append(createCell(formatLocalTime(incident.updated_at)));
-      const titleCell = document.createElement("td");
-      const button = document.createElement("button");
+      const titleCell = globalScope.document.createElement("td");
+      const button = globalScope.document.createElement("button");
       button.type = "button";
       button.className = "incident-button";
       button.textContent = incident.title;
@@ -109,18 +152,11 @@
     const list = byId(id);
     const source = values && values.length ? values : [emptyText];
     const items = source.map((value) => {
-      const item = document.createElement("li");
+      const item = globalScope.document.createElement("li");
       item.textContent = value;
       return item;
     });
     list.replaceChildren(...items);
-  }
-
-  function selectRecord(record) {
-    state.selected = record;
-    state.view = "selected";
-    renderDetail(record);
-    renderStates();
   }
 
   function renderDetail(record) {
@@ -140,8 +176,7 @@
     setText("detailSummary", analysis.summary);
     setText("detailScope", analysis.scope);
     setText("detailRationale", analysis.rationale);
-    const sourceLink = byId("sourceLink");
-    sourceLink.href = incident.source_link || incident.source_url;
+    byId("sourceLink").href = incident.source_link || incident.source_url;
     renderList("detailImpact", analysis.potential_impact);
     renderList("detailActions", analysis.recommended_actions);
     renderList("planImmediate", responsePlan.immediate_actions);
@@ -153,12 +188,34 @@
     renderList("detailWarnings", analysis.warnings, "No warnings");
   }
 
+  async function fetchJson(path) {
+    const response = await globalScope.fetch(path, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+    return response.json();
+  }
+
+  function selectRecord(record) {
+    state.selected = record;
+    state.view = "selected";
+    renderDetail(record);
+    renderStates();
+    fetchJson(`/api/incidents/${encodeURIComponent(record.incident.incident_id)}`)
+      .then((detail) => {
+        state.selected = detail;
+        renderDetail(detail);
+      })
+      .catch(() => {
+        state.stale = true;
+        renderStates();
+      });
+  }
+
   function renderStates() {
     setHidden("loadingState", state.view !== "loading");
     setHidden("errorState", state.view !== "error");
     setHidden("staleState", !state.stale);
-    setHidden("noSelectionState", state.view === "selected");
-    setHidden("selectedState", state.view !== "selected");
+    setHidden("noSelectionState", Boolean(state.selected));
+    setHidden("selectedState", !state.selected);
     if (state.error) setText("errorMessage", state.error);
     const labels = { loading: "Loading", empty: "No incidents", error: "Refresh failed", stale: "Showing stale data", selected: "Incident selected", "no-selection": "No incident selected" };
     setText("statusAnnouncer", labels[state.view] || "Dashboard ready", "");
@@ -170,6 +227,27 @@
     renderIncidents(state.incidents);
     if (state.selected) renderDetail(state.selected);
     renderStates();
+  }
+
+  function applyRefreshSuccess(payload) {
+    const selectedId = state.selected && state.selected.incident.incident_id;
+    state.health = payload.health;
+    state.stats = payload.stats;
+    state.incidents = payload.incidents;
+    state.selected = selectedId
+      ? payload.incidents.find((record) => record.incident.incident_id === selectedId) || state.selected
+      : null;
+    state.view = state.selected ? "selected" : state.incidents.length ? "no-selection" : "empty";
+    state.stale = false;
+    state.error = null;
+    renderDashboard();
+  }
+
+  function applyRefreshError() {
+    state.error = "Unable to refresh the dashboard API. Prior data is retained.";
+    state.stale = Boolean(state.health || state.stats || state.incidents.length);
+    state.view = "error";
+    renderDashboard();
   }
 
   function readFilters() {
@@ -187,14 +265,40 @@
     readFilters();
   }
 
+  const publicApi = Object.freeze({
+    createInitialState,
+    createPollController,
+    formatLocalTime,
+    severityLabel,
+    transformIncidents,
+    renderDashboard,
+    state,
+  });
+
+  let pollController = null;
+
   function bootstrap() {
     byId("filterForm").addEventListener("input", readFilters);
     byId("clearFiltersButton").addEventListener("click", clearFilters);
-    byId("refreshButton").addEventListener("click", () => window.dispatchEvent(new Event("dashboard:refresh")));
-    byId("retryButton").addEventListener("click", () => window.dispatchEvent(new Event("dashboard:refresh")));
+    byId("refreshButton").addEventListener("click", () => pollController.refresh());
+    byId("retryButton").addEventListener("click", () => pollController.refresh());
     renderDashboard();
+    pollController.start();
   }
 
-  window.AzureDashboard = Object.freeze({ createInitialState, formatLocalTime, severityLabel, transformIncidents, renderDashboard, state });
-  document.addEventListener("DOMContentLoaded", bootstrap);
-}());
+  if (globalScope.document) {
+    const configured = Number(globalScope.document.querySelector('meta[name="dashboard-poll-seconds"]')?.content);
+    const intervalSeconds = Number.isFinite(configured) && configured > 0 ? configured : 30;
+    pollController = createPollController({
+      fetchJson,
+      intervalMs: intervalSeconds * 1000,
+      onSuccess: applyRefreshSuccess,
+      onError: applyRefreshError,
+    });
+    globalScope.AzureDashboard = publicApi;
+    globalScope.document.addEventListener("DOMContentLoaded", bootstrap);
+    globalScope.addEventListener("beforeunload", () => pollController.stop(), { once: true });
+  }
+
+  if (typeof module !== "undefined" && module.exports) module.exports = publicApi;
+}(typeof window !== "undefined" ? window : globalThis));
