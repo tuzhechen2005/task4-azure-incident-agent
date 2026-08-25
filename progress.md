@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-006 — SQLite Database and Repository (checkpoint)
-- Completed tasks: 6
-- Remaining tasks: 10
+- Current task: TASK-007 — LLM Client Interface and Prompt Templates (checkpoint)
+- Completed tasks: 7
+- Remaining tasks: 9
 
 ## Task Progress
 
@@ -117,9 +117,27 @@
 - Full suite: PASS — 63 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (19 source files).
 - Acceptance criteria: PASS — reopen persistence, unique IDs, atomic validation/rollback, updates, filters, order, pagination, stats, not-found, and corrupt-read validation verified.
+- Commit: `472a1c1` — `feat(storage): complete TASK-006 SQLite repository`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-007
+
+### TASK-007 — LLM Client Interface and Prompt Templates
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/agents/__init__.py`, `app/agents/client.py`, `app/agents/prompts.py`, `tests/unit/test_prompts.py`, `tests/unit/test_llm_client.py`, `TASKS.md`, `progress.md`
+- RED tests: Severity rubric, output contract, untrusted delimiters, secret exclusion, fake-client protocol, and typed error categories in prompt/client unit tests.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_prompts.py tests/unit/test_llm_client.py` failed during collection because `app.agents` did not exist, confirming the intended missing client/prompt layer.
+- GREEN implementation: Added an injectable synchronous client protocol, immutable response type, typed safe error taxonomy, severity/non-invention/injection system prompt, deterministic untrusted-data delimiters, and complete strict JSON output contract.
+- REFACTOR: Centralized fixed prompt text and immutable bundle/response values; kept provider behavior entirely outside prompt construction.
+- Focused tests: PASS — 7 tests.
+- Full suite: PASS — 70 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (24 source files).
+- Acceptance criteria: PASS — deterministic prompts, all severities/schema fields, untrusted-data delimiting, environment-secret exclusion, fake protocol compatibility, and error categories verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-007
+- Next task: TASK-008
 
 ## Problems, Pitfalls and Solutions
 

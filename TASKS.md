@@ -187,7 +187,7 @@
 
 ## TASK-007 — LLM Client Interface and Prompt Templates
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Define a provider-neutral LLM boundary and prompts that demand the Decision Agent schema.
 
@@ -473,7 +473,7 @@
 | TASK-004 | Feed Parser | DONE |
 | TASK-005 | Incident Normalization and Identity | DONE |
 | TASK-006 | SQLite Database and Repository | DONE |
-| TASK-007 | LLM Client Interface and Prompt Templates | TODO |
+| TASK-007 | LLM Client Interface and Prompt Templates | DONE |
 | TASK-008 | Decision Agent, Validation, and Fallback | TODO |
 | TASK-009 | Incident Processing Service | TODO |
 | TASK-010 | Scheduler and Lifecycle | TODO |
