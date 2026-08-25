@@ -103,14 +103,20 @@ class DecisionAgent:
         }
         severity = Severity.SEV_3 if active_or_monitoring else Severity.SEV_4
         confidence = 0.25 if active_or_monitoring else 0.35
+        reason_label = {
+            "missing credentials or client": "未配置凭据或客户端",
+            "invalid model response": "模型响应无效",
+            "provider error": "提供商错误",
+            "timeout": "请求超时",
+            "provider": "提供商不可用",
+            "rate limit": "达到调用频率限制",
+            "authentication": "身份验证失败",
+            "invalid response": "响应无效",
+        }.get(reason, "分析服务不可用")
         impact = (
-            [
-                "Matching workloads may experience disruption; verify against local telemetry."
-            ]
+            ["匹配的工作负载可能受到影响，请结合本地遥测数据核实。"]
             if active_or_monitoring
-            else [
-                "No active workload impact is confirmed by the supplied public notice."
-            ]
+            else ["当前公共通知未确认仍有活跃的工作负载影响。"]
         )
         return IncidentAnalysis(
             incident_id=agent_input.incident_id,
@@ -118,44 +124,37 @@ class DecisionAgent:
             confidence=confidence,
             affected_services=agent_input.services,
             affected_regions=agent_input.regions,
-            scope="Public status information only; tenant-specific scope is not confirmed.",
+            scope="仅依据公共状态信息，尚未确认具体租户的实际影响范围。",
             summary=agent_input.title,
             potential_impact=impact,
             recommended_actions=[
-                "Verify actual impact using application and platform telemetry.",
-                "Monitor the linked public status source for updates.",
-                "Escalate through established support channels if local impact is confirmed.",
+                "通过应用和平台遥测数据核实实际影响。",
+                "持续关注关联的公共状态来源。",
+                "若确认本地业务受影响，请通过既定支持渠道升级处理。",
             ],
             response_plan=ResponsePlan(
-                immediate_actions=[
-                    "Confirm whether affected services and regions match deployed workloads."
-                ],
-                investigation_steps=[
-                    "Review error rates, latency, availability, and recent deployment changes."
-                ],
+                immediate_actions=["确认受影响的服务和区域是否与已部署工作负载匹配。"],
+                investigation_steps=["检查错误率、延迟、可用性以及近期部署变更。"],
                 mitigation_options=[
-                    "Use only pre-approved retries, failover, or workload workarounds."
+                    "仅使用预先批准的重试、故障转移或工作负载绕行方案。"
                 ],
                 communication_plan=[
-                    "Share verified local impact and cite the public source without overstating scope."
+                    "同步已核实的本地影响并引用公共来源，不夸大影响范围。"
                 ],
-                recovery_checks=[
-                    "Confirm local metrics return to baseline before declaring recovery."
-                ],
+                recovery_checks=["宣布恢复前，确认本地指标已回到基线。"],
                 escalation_conditions=[
-                    "Escalate if impact expands, critical workloads stop, or data integrity is at risk."
+                    "若影响扩大、关键工作负载停止或数据完整性面临风险，应立即升级。"
                 ],
             ),
             rationale=(
-                "Conservative fallback severity based on normalized status because no valid "
-                "model assessment was available."
+                "由于没有可用的有效模型评估，系统依据规范化状态采用保守的备用严重级别。"
             ),
             analyzed_at=self._now(),
             analysis_source=AnalysisSource.FALLBACK,
             model=None,
             warnings=[
-                f"Deterministic fallback used: {reason}.",
-                "Public status data does not confirm tenant-specific impact.",
+                f"已使用确定性备用分析：{reason_label}。",
+                "公共状态数据无法确认具体租户的实际影响。",
             ],
         )
 

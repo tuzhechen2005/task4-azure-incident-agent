@@ -33,21 +33,21 @@ def delivery_files() -> list[str]:
 
 def test_readme_covers_required_operator_topics() -> None:
     for heading in (
-        "Architecture and data flow",
-        "Module responsibilities",
-        "Data contracts",
-        "Install",
-        "Run locally",
-        "Offline dashboard demo",
-        "Configuration reference",
-        "API",
-        "Decision Agent and prompt strategy",
-        "Dashboard behavior",
-        "Failure behavior",
-        "Test and quality commands",
-        "Project structure",
-        "Troubleshooting",
-        "Security and limitations",
+        "架构与数据流",
+        "模块职责",
+        "数据契约",
+        "安装",
+        "本地运行",
+        "离线监控面板演示",
+        "配置参考",
+        "API 接口",
+        "Decision Agent 与提示词策略",
+        "监控面板行为",
+        "失败处理",
+        "测试与质量检查命令",
+        "项目结构",
+        "常见问题排查",
+        "安全与限制",
     ):
         assert f"## {heading}" in README or f"### {heading}" in README
 
@@ -86,14 +86,14 @@ def test_referenced_local_paths_exist() -> None:
 
 def test_retrospective_covers_required_topics() -> None:
     for topic in (
-        "Goal and outcome",
-        "SDD and TDD workflow",
-        "Key design decisions",
-        "Conservative Decision Agent",
-        "Problems encountered and resolutions",
-        "Limitations and tradeoffs",
-        "Lessons",
-        "Recommended improvements",
+        "目标与成果",
+        "SDD 与 TDD 工作流",
+        "关键设计决策",
+        "保守的 Decision Agent",
+        "遇到的问题与解决办法",
+        "限制与权衡",
+        "经验总结",
+        "后续改进建议",
     ):
         assert topic in RETROSPECTIVE
 

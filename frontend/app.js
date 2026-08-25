@@ -2,11 +2,18 @@
 
 (function (globalScope) {
   const severityLabels = Object.freeze({
-    "SEV-1": "SEV-1 Critical",
-    "SEV-2": "SEV-2 High",
-    "SEV-3": "SEV-3 Medium",
-    "SEV-4": "SEV-4 Low",
+    "SEV-1": "SEV-1 严重",
+    "SEV-2": "SEV-2 高",
+    "SEV-3": "SEV-3 中",
+    "SEV-4": "SEV-4 低",
   });
+  const statusLabels = Object.freeze({
+    ACTIVE: "处理中",
+    MONITORING: "监控中",
+    RESOLVED: "已解决",
+    UNKNOWN: "未知",
+  });
+  const analysisSourceLabels = Object.freeze({ LLM: "大模型", FALLBACK: "本地备用分析" });
 
   const byId = (id) => globalScope.document.getElementById(id);
   const setText = (id, value, fallback = "—") => {
@@ -75,11 +82,11 @@
   function formatLocalTime(value) {
     if (!value) return "—";
     const date = new Date(value);
-    return Number.isNaN(date.valueOf()) ? "Invalid time" : date.toLocaleString();
+    return Number.isNaN(date.valueOf()) ? "无效时间" : date.toLocaleString("zh-CN");
   }
 
   function severityLabel(value) {
-    return severityLabels[value] || `${value || "UNKNOWN"} Unclassified`;
+    return severityLabels[value] || `${value || "UNKNOWN"} 未分类`;
   }
 
   function transformIncidents(records, filters) {
@@ -97,9 +104,10 @@
 
   function renderHealth(health) {
     const status = health ? health.status : "unknown";
-    setText("healthBadge", status === "healthy" ? "Healthy" : status === "degraded" ? "Degraded" : "Unknown");
+    setText("healthBadge", status === "healthy" ? "健康" : status === "degraded" ? "降级" : "未知");
     byId("healthBadge").dataset.status = status;
-    setText("analysisMode", health && health.analysis_mode);
+    const mode = health && health.analysis_mode;
+    setText("analysisMode", mode === "fallback-only" ? "仅本地备用分析" : mode);
     setText("lastSuccess", formatLocalTime(health && health.last_successful_ingestion_at));
   }
 
@@ -137,18 +145,18 @@
       button.addEventListener("click", () => selectRecord(record));
       titleCell.append(button);
       row.append(titleCell);
-      row.append(createCell(`${incident.services.join(", ") || "Unknown service"} · ${incident.regions.join(", ") || "Unknown region"}`, "muted"));
-      row.append(createCell(incident.status));
+      row.append(createCell(`${incident.services.join(", ") || "未知服务"} · ${incident.regions.join(", ") || "未知区域"}`, "muted"));
+      row.append(createCell(statusLabels[incident.status] || incident.status));
       row.append(createCell(severityLabel(analysis.severity)));
       row.append(createCell(analysis.summary));
       return row;
     });
     byId("incidentRows").replaceChildren(...rows);
-    setText("resultCount", `${visible.length} result${visible.length === 1 ? "" : "s"}`);
+    setText("resultCount", `${visible.length} 条结果`);
     setHidden("emptyState", state.view === "loading" || visible.length > 0);
   }
 
-  function renderList(id, values, emptyText = "None provided") {
+  function renderList(id, values, emptyText = "暂无内容") {
     const list = byId(id);
     const source = values && values.length ? values : [emptyText];
     const items = source.map((value) => {
@@ -166,12 +174,12 @@
     const responsePlan = analysis.response_plan || {};
     setText("detailSeverity", severityLabel(analysis.severity));
     setText("detailTitle", incident.title);
-    setText("detailStatus", incident.status);
-    setText("detailServices", incident.services.join(", "), "Unknown");
-    setText("detailRegions", incident.regions.join(", "), "Unknown");
+    setText("detailStatus", statusLabels[incident.status] || incident.status);
+    setText("detailServices", incident.services.join(", "), "未知");
+    setText("detailRegions", incident.regions.join(", "), "未知");
     setText("detailPublished", formatLocalTime(incident.published_at));
     setText("detailUpdated", formatLocalTime(incident.updated_at));
-    setText("detailSource", analysis.analysis_source);
+    setText("detailSource", analysisSourceLabels[analysis.analysis_source] || analysis.analysis_source);
     setText("detailConfidence", `${Math.round(analysis.confidence * 100)}%`);
     setText("detailSummary", analysis.summary);
     setText("detailScope", analysis.scope);
@@ -185,12 +193,12 @@
     renderList("planCommunication", responsePlan.communication_plan);
     renderList("planRecovery", responsePlan.recovery_checks);
     renderList("planEscalation", responsePlan.escalation_conditions);
-    renderList("detailWarnings", analysis.warnings, "No warnings");
+    renderList("detailWarnings", analysis.warnings, "暂无风险提示");
   }
 
   async function fetchJson(path) {
     const response = await globalScope.fetch(path, { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+    if (!response.ok) throw new Error(`API 请求失败，状态码：${response.status}`);
     return response.json();
   }
 
@@ -217,8 +225,8 @@
     setHidden("noSelectionState", Boolean(state.selected));
     setHidden("selectedState", !state.selected);
     if (state.error) setText("errorMessage", state.error);
-    const labels = { loading: "Loading", empty: "No incidents", error: "Refresh failed", stale: "Showing stale data", selected: "Incident selected", "no-selection": "No incident selected" };
-    setText("statusAnnouncer", labels[state.view] || "Dashboard ready", "");
+    const labels = { loading: "正在加载", empty: "暂无事件", error: "刷新失败", stale: "正在显示旧数据", selected: "已选择事件", "no-selection": "尚未选择事件" };
+    setText("statusAnnouncer", labels[state.view] || "监控面板已就绪", "");
   }
 
   function renderDashboard() {
@@ -244,7 +252,7 @@
   }
 
   function applyRefreshError() {
-    state.error = "Unable to refresh the dashboard API. Prior data is retained.";
+    state.error = "无法刷新监控面板 API，已保留此前的数据。";
     state.stale = Boolean(state.health || state.stats || state.incidents.length);
     state.view = "error";
     renderDashboard();

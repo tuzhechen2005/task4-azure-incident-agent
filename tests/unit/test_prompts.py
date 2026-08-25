@@ -29,6 +29,7 @@ def test_prompt_contains_severity_rubric() -> None:
     for severity in ("SEV-1", "SEV-2", "SEV-3", "SEV-4"):
         assert severity in prompts.system
     assert "insufficient evidence" in prompts.system.lower()
+    assert "Simplified Chinese" in prompts.system
 
 
 def test_prompt_contains_output_contract() -> None:

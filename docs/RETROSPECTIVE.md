@@ -1,88 +1,89 @@
-# Project Retrospective
+# 项目复盘
 
-## Goal and outcome
+## 目标与成果
 
-The goal was to turn an approved specification and ordered task plan into a locally runnable Azure public-status incident response agent and monitoring dashboard. The result covers ingestion, defensive parsing, normalization, stable identity and change detection, validated analysis/fallback, atomic SQLite persistence, scheduling, four FastAPI endpoints, a responsive no-build dashboard, offline tests, operator documentation, and delivery evidence.
+项目目标是把已批准的规格说明和有序任务计划，落实为一个可在本地运行的 Azure 公共状态事件响应智能体与监控面板。最终交付覆盖数据采集、防御性解析、规范化、稳定身份与变化检测、分析校验与备用策略、SQLite 原子持久化、定时调度、四个 FastAPI 接口、响应式无构建网页、离线测试、操作文档和完整交付证据。
 
-The project intentionally stays local and simple: one Python process, one SQLite database, standard HTML/CSS/JavaScript, no cloud account requirement, and no mandatory LLM credential.
+项目有意保持本地化和简单化：一个 Python 进程、一个 SQLite 数据库、原生 HTML／CSS／JavaScript，不要求云账号，也不强制提供 LLM 凭据。
 
-## SDD and TDD workflow
+## SDD 与 TDD 工作流
 
-`SPEC.md` remained the product contract, `AGENTS.md` the execution contract, and `TASKS.md` the dependency-ordered work plan. Each testable Task followed Red–Green–Refactor: tests were added first, an expected missing-behavior failure was observed, the minimum implementation was added, focused and historical suites were run, then structure and typing were improved without expanding behavior. Each Task updated `progress.md`, received a dedicated Conventional Commit, and was pushed before the next Task.
+`SPEC.md` 是产品契约，`AGENTS.md` 是执行契约，`TASKS.md` 是按依赖排列的实施计划。每个可测试任务都遵循红—绿—重构：先增加测试并观察预期的缺失行为失败，再加入最小实现，运行聚焦测试和历史测试，最后在不扩大功能范围的前提下改善结构和类型。每个任务都会更新 `progress.md`，使用独立的 Conventional Commit，并在开始下一任务前推送。
 
-This sequence prevented later layers from dictating earlier contracts. For example, the API consumes the same Pydantic records validated by the parser, agent, and repository rather than maintaining parallel response dictionaries.
+这一顺序避免了后层功能反向改变前层契约。例如 API 直接复用解析器、智能体和仓库使用的 Pydantic 数据结构，而没有维护另一套平行响应字典。
 
-## Key design decisions
+## 关键设计决策
 
-### Explicit boundaries
+### 明确且可注入的边界
 
-Network transport, clocks, sleepers, LLM clients, scheduler waiters, repositories, and browser timers/fetch functions are injectable. This made timeout, retry, overlap, stale recovery, and dependency failures deterministic without live services.
+网络传输、时钟、等待器、LLM 客户端、调度等待器、仓库、浏览器计时器和请求函数都可以注入。因此，超时、重试、任务重叠、旧数据恢复和依赖故障都能在不访问真实服务的情况下确定性测试。
 
-### Identity separate from content
+### 将稳定身份与内容分离
 
-Stable identity prefers source plus source event ID; otherwise it uses source/title and stable publication/link fields. A separate material fingerprint includes normalized title, description, status, services, regions, and publication time. This cleanly supports insert, re-analyze/update, and unchanged/skip behavior.
+稳定身份优先使用来源和来源事件 ID；缺失时组合来源、标题及稳定的发布时间／链接字段。独立的内容指纹包含规范化标题、描述、状态、服务、区域和发布时间。这一设计清晰支持新增写入、变化后重新分析／更新，以及未变化时跳过。
 
-### One atomic validated record
+### 一条原子化校验记录
 
-SQLite stores the latest normalized incident and analysis together in one row, with indexed query columns. Read and write boundaries revalidate JSON. This keeps the local implementation small while guaranteeing that an incident and its analysis do not partially diverge.
+SQLite 将最新的规范化事件和分析共同保存在一行，并为查询字段建立索引。读写边界都会重新校验 JSON。这样既保持本地实现简洁，也确保事件及其分析不会出现部分更新或相互不一致。
 
-### Conservative Decision Agent
+### 保守的 Decision Agent
 
-The model prompt is deterministic, treats feed text as untrusted, defines all severities, forbids invention, and demands one schema-matching JSON object. Application code owns metadata and ID consistency. Any failure produces a full fallback rather than partial model output. The fallback deliberately reports uncertainty and asks operators to verify actual local impact.
+模型提示词是确定性的，将订阅源文本视为不可信数据，定义所有严重级别，禁止臆测，要求简体中文内容，并严格限定为一个符合结构的 JSON 对象。应用代码控制元数据和事件 ID 一致性。任何失败都会生成完整备用结果，而不是保留部分模型输出。备用结果会明确表达不确定性，并要求运维人员核实真实本地影响。
 
-### No-build accessible dashboard
+### 无构建步骤的无障碍中文面板
 
-The dashboard uses semantic HTML and native controls. Renderers construct nodes and assign `textContent`; no external text becomes HTML. The polling controller is portable enough to run under Node with injected fetch and timer functions, while the browser layer handles loading, empty, selection, stale, error, retry, and recovery states.
+网页采用语义化 HTML 和原生控件。渲染器创建 DOM 节点并设置 `textContent`，任何外部文本都不会成为 HTML。轮询控制器通过注入请求和计时器函数，可直接在 Node 中运行；浏览器层则处理中文的加载、空列表、选择、数据过期、错误、重试和恢复状态。
 
-## Problems encountered and resolutions
+## 遇到的问题与解决办法
 
-The durable problem log is in `progress.md`. Notable examples:
+完整且持续维护的问题记录位于 `progress.md` 的 `Problems, Pitfalls and Solutions` 章节。代表性问题包括：
 
-- The base Python environment lacked pytest. A pinned dependency manifest and ignored virtual environment established a reproducible baseline.
-- Pydantic Settings exposes `_env_file` dynamically, which mypy cannot see. Test-only construction was centralized behind one narrowly documented suppression.
-- Inline HTML fragments initially gained a space before punctuation. The sanitizer was corrected to join inline fragments directly and insert separators only for block elements.
-- Quality gates caught an unused test import and one unformatted dashboard test. Both were removed/fixed immediately and the entire suite was rerun.
+- 基础 Python 环境没有 pytest。通过依赖清单和被忽略的虚拟环境建立了可复现基线。
+- Pydantic Settings 动态暴露 `_env_file`，mypy 无法识别。测试构造被集中到一个带窄范围说明的类型抑制入口。
+- 行内 HTML 片段最初会在标点前增加空格。清洗逻辑改为直接拼接行内内容，只在块级元素间插入分隔。
+- 最终审计发现健康接口可能根据密钥误报 LLM 模式。随后让健康状态读取应用实际装配的分析模式，并增加安全阶段日志。
+- ZIP 解压后没有 `.git`，两项交付测试曾依赖 `git ls-files`。测试现在会在无 Git 元数据时安全扫描解压目录。
 
-Recording actual failures—including small quality failures—made the process auditable without inventing problems for appearances.
+如实记录包括格式和交付检查在内的实际失败，使过程可以审计，也避免为了形式而虚构问题。
 
-## What worked well
+## 做得较好的部分
 
-- Small dependency-ordered commits kept review scope clear.
-- Schema reuse made validation consistent across RSS, storage, agent, and HTTP boundaries.
-- Fakes and fixtures kept every default test offline and fast.
-- Combining stable identity with fingerprinting made deduplication behavior easy to explain and verify.
-- Treating failure states as first-class UI/API behavior produced a useful local demo even with RSS or LLM unavailable.
-- Direct Node tests provided stronger polling evidence than static JavaScript inspection alone.
+- 小型、按依赖排序的提交让每次审查范围清晰。
+- 复用数据结构，使 RSS、存储、智能体和 HTTP 边界保持一致校验。
+- 固定数据和假对象让所有默认测试保持离线且快速。
+- 稳定身份与内容指纹组合后，去重行为容易解释和验证。
+- 将故障状态视为 API 和网页的一等行为，因此 RSS 或 LLM 不可用时本地演示仍有价值。
+- 直接 Node 测试为轮询行为提供了比静态 JavaScript 检查更强的证据。
 
-## Limitations and tradeoffs
+## 限制与权衡
 
-- Public Azure status data is global and cannot establish tenant-specific impact.
-- The bundled runtime is fallback-only; the provider-neutral `LLMClient` boundary is ready for a reviewed adapter, but no vendor SDK is shipped.
-- Service and region detection uses a deliberately small known-name catalog rather than broad inference.
-- Only the latest analysis is retained; there is no incident history table or audit timeline.
-- The scheduler protects overlap in one process only. Multiple Uvicorn workers would each schedule ingestion.
-- The dashboard retrieves at most 100 recent records per refresh and filters that view locally.
-- The local server has no authentication and should bind only to a trusted loopback interface.
+- Azure 公共状态是全球信息，无法证明具体租户受到影响。
+- 捆绑运行时只使用备用分析；`LLMClient` 已为经过审查的适配器保留扩展边界，但未包含厂商 SDK。
+- 服务和区域识别使用小型已知名称表，没有进行宽泛推断。
+- 系统只保留最新分析，没有事件历史表或审计时间线。
+- 调度器只在单进程内避免重叠；多个 Uvicorn worker 会各自启动采集任务。
+- 网页每次最多获取最近 100 条记录，并在本地筛选这部分数据。
+- 本地服务没有身份验证，只应绑定到可信回环地址。
 
-These tradeoffs preserve the specification's KISS/local-demo constraint and leave clear extension points.
+这些权衡保留了规格要求的 KISS 和本地演示约束，同时留下了明确扩展点。
 
-## Lessons
+## 经验总结
 
-1. A strict fallback contract is as important as the model success path; resilience comes from validated complete outputs, not exception suppression.
-2. External text needs safety at every boundary: parser sanitization, schema validation, prompt delimiting, persistence validation, and DOM text rendering reinforce each other.
-3. Time and scheduling code becomes straightforward once clocks and waits are explicit dependencies.
-4. Operational health should distinguish unavailable local data from degraded external dependencies; users can still act on stored information.
-5. Progress documentation is most useful when updated at Task boundaries with exact commands and symptoms, not reconstructed at the end.
+1. 严格的备用契约和模型成功路径同样重要；可靠性来自完整且经过校验的输出，而不是简单吞掉异常。
+2. 外部文本需要在每个边界保证安全：解析清洗、结构校验、提示词分隔、存储校验和 DOM 纯文本渲染相互加强。
+3. 将时钟和等待显式设为依赖后，时间与调度代码会更容易理解和测试。
+4. 运维健康状态应区分“本地数据不可用”和“外部依赖降级”；即使外部服务失败，用户仍可使用已保存信息。
+5. 进度文档在任务边界及时记录准确命令、症状和提交，比项目结束后回忆重建更有价值。
 
-## Recommended improvements
+## 后续改进建议
 
-1. Add a reviewed provider adapter supporting schema/JSON mode without changing `LLMClient` or the fallback contract.
-2. Discover services/regions from a maintained data file with tests for aliases and localization.
-3. Add an optional incident-analysis history table and timeline view while retaining the current latest-record API.
-4. Add browser-level accessibility and visual-regression automation in addition to static/Node checks.
-5. Add explicit SQLite schema migrations if the local data model evolves beyond version 1.
-6. Add opt-in live RSS smoke tests behind a marker, never in the default suite.
+1. 增加经过审查、支持结构化 JSON 输出的提供商适配器，同时保持 `LLMClient` 和备用契约不变。
+2. 从可维护数据文件中识别服务和区域，并为别名和本地化增加测试。
+3. 增加可选的事件分析历史表和时间线视图，同时保留当前最新记录 API。
+4. 在静态检查和 Node 测试之外，增加浏览器级无障碍与视觉回归自动化。
+5. 当本地数据模型超过版本 1 时，引入显式 SQLite 结构迁移。
+6. 增加必须主动启用的真实 RSS 冒烟测试，永远不放入默认测试套件。
 
-## Delivery conclusion
+## 交付结论
 
-The system meets the approved local scope with traceable tasks, offline evidence, safe failure behavior, and documentation for setup, operation, demo, testing, architecture, prompts, limitations, and troubleshooting. Final commands and AC-001 through AC-018 results are recorded in `progress.md` and `SPEC.md`.
+系统满足已批准的本地运行范围，具备可追踪任务、离线证据、安全故障行为，以及中文安装、运行、演示、测试、架构、提示词、限制和排障文档。最终命令及 AC-001 至 AC-018 的结果记录在 `progress.md` 和 `SPEC.md` 中。

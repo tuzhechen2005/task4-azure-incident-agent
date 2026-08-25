@@ -1,4 +1,4 @@
-"""Seed a local SQLite database from the deterministic Azure RSS fixture."""
+"""使用固定 Azure RSS 数据为本地 SQLite 数据库写入演示事件。"""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ FIXTURE = ROOT / "tests" / "fixtures" / "rss_valid.xml"
 
 
 class FixtureFetcher:
-    """Return bundled fixture bytes without any network access."""
+    """不访问网络，直接返回仓库中的固定测试数据。"""
 
     def fetch(self) -> FetchResult:
         return FetchResult(
@@ -32,7 +32,7 @@ class FixtureFetcher:
 
 
 def seed(database_path: Path) -> int:
-    """Process the fixture once and return the number of stored records."""
+    """处理一次固定数据，并返回数据库中的记录总数。"""
     repository = IncidentRepository(Database(database_path))
     repository.initialize()
     agent = DecisionAgent(client=None, timeout_seconds=1, max_retries=0)
@@ -52,12 +52,12 @@ def main() -> None:
         "--database",
         type=Path,
         default=Path("data/demo.db"),
-        help="SQLite output path (default: data/demo.db)",
+        help="SQLite 输出路径（默认：data/demo.db）",
     )
     arguments = parser.parse_args()
     total = seed(arguments.database)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    LOGGER.info("Offline demo database ready: %s stored incidents", total)
+    LOGGER.info("离线演示数据库已就绪：共保存 %s 条事件", total)
 
 
 if __name__ == "__main__":

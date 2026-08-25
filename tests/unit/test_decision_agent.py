@@ -142,7 +142,7 @@ def test_timeout_uses_fallback() -> None:
     )
 
     assert result.analysis_source is AnalysisSource.FALLBACK
-    assert any("timeout" in warning.lower() for warning in result.warnings)
+    assert any("超时" in warning for warning in result.warnings)
 
 
 def test_provider_error_uses_fallback() -> None:
@@ -151,7 +151,7 @@ def test_provider_error_uses_fallback() -> None:
     )
 
     assert result.analysis_source is AnalysisSource.FALLBACK
-    assert any("provider" in warning.lower() for warning in result.warnings)
+    assert any("提供商" in warning for warning in result.warnings)
 
 
 def test_single_repair_attempt() -> None:
@@ -173,6 +173,7 @@ def test_fallback_active_severity() -> None:
     assert result.severity is Severity.SEV_3
     assert result.confidence < 0.5
     assert result.affected_services == ["Azure SQL"]
+    assert "本地遥测" in result.potential_impact[0]
 
 
 def test_fallback_resolved_severity() -> None:

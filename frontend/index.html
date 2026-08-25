@@ -1,26 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Local dashboard for public Azure status incidents">
+    <meta name="description" content="Azure 公共状态事件本地监控面板">
     <meta name="dashboard-poll-seconds" content="__DASHBOARD_POLL_SECONDS__">
-    <title>Azure Incident Response</title>
+    <title>Azure 事件响应中心</title>
     <link rel="stylesheet" href="/static/styles.css">
   </head>
   <body>
-    <a class="skip-link" href="#incidentList">Skip to incidents</a>
+    <a class="skip-link" href="#incidentList">跳转到事件列表</a>
     <header class="site-header">
       <div>
-        <p class="eyebrow">Local operations console</p>
-        <h1>Azure Incident Response</h1>
-        <p class="source-note">Public Azure status signals · Tenant impact must be verified locally</p>
+        <p class="eyebrow">本地运维控制台</p>
+        <h1>Azure 事件响应中心</h1>
+        <p class="source-note">Azure 公共状态信号 · 租户实际影响必须通过本地数据确认</p>
       </div>
       <div id="systemHealth" class="system-health" aria-live="polite">
-        <span id="healthBadge" class="health-badge">Checking</span>
-        <span>Analysis: <strong id="analysisMode">—</strong></span>
-        <span>Last healthy poll: <time id="lastSuccess">—</time></span>
-        <button id="refreshButton" class="button button-primary" type="button">Refresh data</button>
+        <span id="healthBadge" class="health-badge">检查中</span>
+        <span>分析模式：<strong id="analysisMode">—</strong></span>
+        <span>最近成功采集：<time id="lastSuccess">—</time></span>
+        <button id="refreshButton" class="button button-primary" type="button">刷新数据</button>
       </div>
     </header>
 
@@ -28,96 +28,96 @@
 
     <main class="page-shell">
       <section id="summaryCards" class="summary-grid" aria-labelledby="summaryHeading">
-        <h2 id="summaryHeading" class="sr-only">Incident summary</h2>
-        <article class="summary-card summary-card-total"><span>Total incidents</span><strong id="totalCount">0</strong></article>
-        <article class="summary-card severity-1"><span>SEV-1 Critical</span><strong id="sev1Count">0</strong></article>
-        <article class="summary-card severity-2"><span>SEV-2 High</span><strong id="sev2Count">0</strong></article>
-        <article class="summary-card severity-3"><span>SEV-3 Medium</span><strong id="sev3Count">0</strong></article>
-        <article class="summary-card severity-4"><span>SEV-4 Low</span><strong id="sev4Count">0</strong></article>
-        <article class="summary-card"><span>Active</span><strong id="activeCount">0</strong></article>
-        <article class="summary-card"><span>Resolved</span><strong id="resolvedCount">0</strong></article>
+        <h2 id="summaryHeading" class="sr-only">事件概览</h2>
+        <article class="summary-card summary-card-total"><span>事件总数</span><strong id="totalCount">0</strong></article>
+        <article class="summary-card severity-1"><span>SEV-1 严重</span><strong id="sev1Count">0</strong></article>
+        <article class="summary-card severity-2"><span>SEV-2 高</span><strong id="sev2Count">0</strong></article>
+        <article class="summary-card severity-3"><span>SEV-3 中</span><strong id="sev3Count">0</strong></article>
+        <article class="summary-card severity-4"><span>SEV-4 低</span><strong id="sev4Count">0</strong></article>
+        <article class="summary-card"><span>处理中</span><strong id="activeCount">0</strong></article>
+        <article class="summary-card"><span>已解决</span><strong id="resolvedCount">0</strong></article>
       </section>
 
       <section id="incidentFilters" class="panel filters" aria-labelledby="filterHeading">
         <div class="section-heading">
-          <div><p class="eyebrow">Focus the signal</p><h2 id="filterHeading">Filters</h2></div>
-          <button id="clearFiltersButton" class="button button-secondary" type="button">Clear filters</button>
+          <div><p class="eyebrow">聚焦关键信号</p><h2 id="filterHeading">筛选条件</h2></div>
+          <button id="clearFiltersButton" class="button button-secondary" type="button">清除筛选</button>
         </div>
         <form id="filterForm" class="filter-grid">
-          <label for="severityFilter">Severity
+          <label for="severityFilter">严重级别
             <select id="severityFilter" name="severity">
-              <option value="">All severities</option><option value="SEV-1">SEV-1 Critical</option>
-              <option value="SEV-2">SEV-2 High</option><option value="SEV-3">SEV-3 Medium</option>
-              <option value="SEV-4">SEV-4 Low</option>
+              <option value="">全部级别</option><option value="SEV-1">SEV-1 严重</option>
+              <option value="SEV-2">SEV-2 高</option><option value="SEV-3">SEV-3 中</option>
+              <option value="SEV-4">SEV-4 低</option>
             </select>
           </label>
-          <label for="statusFilter">Status
+          <label for="statusFilter">事件状态
             <select id="statusFilter" name="status">
-              <option value="">All statuses</option><option value="ACTIVE">Active</option>
-              <option value="MONITORING">Monitoring</option><option value="RESOLVED">Resolved</option>
-              <option value="UNKNOWN">Unknown</option>
+              <option value="">全部状态</option><option value="ACTIVE">处理中</option>
+              <option value="MONITORING">监控中</option><option value="RESOLVED">已解决</option>
+              <option value="UNKNOWN">未知</option>
             </select>
           </label>
-          <label for="serviceFilter">Service contains
-            <input id="serviceFilter" name="service" type="search" autocomplete="off" placeholder="e.g. Azure SQL">
+          <label for="serviceFilter">服务名称包含
+            <input id="serviceFilter" name="service" type="search" autocomplete="off" placeholder="例如 Azure SQL">
           </label>
-          <label for="regionFilter">Region contains
-            <input id="regionFilter" name="region" type="search" autocomplete="off" placeholder="e.g. East US">
+          <label for="regionFilter">区域名称包含
+            <input id="regionFilter" name="region" type="search" autocomplete="off" placeholder="例如 East US">
           </label>
         </form>
       </section>
 
-      <div id="staleState" class="state-banner state-warning" hidden>Data may be stale. The last good result remains visible.</div>
+      <div id="staleState" class="state-banner state-warning" hidden>数据可能已过期，当前仍显示最近一次成功结果。</div>
       <div id="errorState" class="state-banner state-error" hidden>
-        <span id="errorMessage">The API could not be reached.</span>
-        <button id="retryButton" class="button button-secondary" type="button">Retry</button>
+        <span id="errorMessage">无法访问 API。</span>
+        <button id="retryButton" class="button button-secondary" type="button">重试</button>
       </div>
-      <div id="loadingState" class="state-banner" aria-live="polite">Loading incident data…</div>
-      <div id="emptyState" class="state-banner" hidden>No incidents match the current view.</div>
+      <div id="loadingState" class="state-banner" aria-live="polite">正在加载事件数据…</div>
+      <div id="emptyState" class="state-banner" hidden>当前条件下没有匹配的事件。</div>
 
       <div class="dashboard-grid">
         <section id="incidentList" class="panel incident-panel" aria-labelledby="incidentHeading">
           <div class="section-heading">
-            <div><p class="eyebrow">Latest stored assessments</p><h2 id="incidentHeading">Incidents</h2></div>
-            <span id="resultCount" class="result-count">0 results</span>
+            <div><p class="eyebrow">最新已存储评估</p><h2 id="incidentHeading">事件列表</h2></div>
+            <span id="resultCount" class="result-count">0 条结果</span>
           </div>
-          <div class="table-scroll" tabindex="0" aria-label="Scrollable incident table">
+          <div class="table-scroll" tabindex="0" aria-label="可滚动事件表格">
             <table>
-              <thead><tr><th scope="col">Updated</th><th scope="col">Incident</th><th scope="col">Service / region</th><th scope="col">Status</th><th scope="col">Severity</th><th scope="col">Assessment</th></tr></thead>
+              <thead><tr><th scope="col">更新时间</th><th scope="col">事件</th><th scope="col">服务／区域</th><th scope="col">状态</th><th scope="col">级别</th><th scope="col">评估摘要</th></tr></thead>
               <tbody id="incidentRows"></tbody>
             </table>
           </div>
         </section>
 
         <aside id="incidentDetail" class="panel detail-panel" aria-labelledby="detailHeading">
-          <div id="noSelectionState" class="detail-empty"><p class="eyebrow">No-selection</p><h2 id="detailHeading">Select an incident</h2><p>Choose a row to inspect the assessment and response plan.</p></div>
+          <div id="noSelectionState" class="detail-empty"><p class="eyebrow">尚未选择</p><h2 id="detailHeading">请选择一个事件</h2><p>选择表格中的事件，查看评估详情和响应计划。</p></div>
           <div id="selectedState" hidden>
             <div class="detail-header"><div><p id="detailSeverity" class="severity-badge">—</p><h2 id="detailTitle">—</h2></div><span id="detailStatus" class="status-pill">—</span></div>
             <dl class="metadata-grid">
-              <div><dt>Services</dt><dd id="detailServices">—</dd></div><div><dt>Regions</dt><dd id="detailRegions">—</dd></div>
-              <div><dt>Published</dt><dd><time id="detailPublished">—</time></dd></div><div><dt>Updated</dt><dd><time id="detailUpdated">—</time></dd></div>
-              <div><dt>Analysis source</dt><dd id="detailSource">—</dd></div><div><dt>Confidence</dt><dd id="detailConfidence">—</dd></div>
+              <div><dt>受影响服务</dt><dd id="detailServices">—</dd></div><div><dt>受影响区域</dt><dd id="detailRegions">—</dd></div>
+              <div><dt>发布时间</dt><dd><time id="detailPublished">—</time></dd></div><div><dt>更新时间</dt><dd><time id="detailUpdated">—</time></dd></div>
+              <div><dt>分析来源</dt><dd id="detailSource">—</dd></div><div><dt>置信度</dt><dd id="detailConfidence">—</dd></div>
             </dl>
-            <a id="sourceLink" class="source-link" href="#" rel="noopener noreferrer" target="_blank">Open public source</a>
-            <section><h3>Factual summary</h3><p id="detailSummary"></p></section>
-            <section><h3>Scope</h3><p id="detailScope"></p></section>
-            <section><h3>Rationale</h3><p id="detailRationale"></p></section>
-            <section><h3>Potential impact</h3><ul id="detailImpact"></ul></section>
-            <section><h3>Recommended actions</h3><ol id="detailActions"></ol></section>
-            <section id="responsePlan"><h3>Response plan</h3>
+            <a id="sourceLink" class="source-link" href="#" rel="noopener noreferrer" target="_blank">打开公共信息来源</a>
+            <section><h3>事实摘要</h3><p id="detailSummary"></p></section>
+            <section><h3>影响范围</h3><p id="detailScope"></p></section>
+            <section><h3>判断依据</h3><p id="detailRationale"></p></section>
+            <section><h3>潜在影响</h3><ul id="detailImpact"></ul></section>
+            <section><h3>建议操作</h3><ol id="detailActions"></ol></section>
+            <section id="responsePlan"><h3>响应计划</h3>
               <div class="plan-grid">
-                <div><h4>Immediate actions</h4><ul id="planImmediate"></ul></div><div><h4>Investigation</h4><ul id="planInvestigation"></ul></div>
-                <div><h4>Mitigation options</h4><ul id="planMitigation"></ul></div><div><h4>Communication</h4><ul id="planCommunication"></ul></div>
-                <div><h4>Recovery checks</h4><ul id="planRecovery"></ul></div><div><h4>Escalation conditions</h4><ul id="planEscalation"></ul></div>
+                <div><h4>立即行动</h4><ul id="planImmediate"></ul></div><div><h4>调查步骤</h4><ul id="planInvestigation"></ul></div>
+                <div><h4>缓解方案</h4><ul id="planMitigation"></ul></div><div><h4>沟通计划</h4><ul id="planCommunication"></ul></div>
+                <div><h4>恢复检查</h4><ul id="planRecovery"></ul></div><div><h4>升级条件</h4><ul id="planEscalation"></ul></div>
               </div>
             </section>
-            <section><h3>Warnings</h3><ul id="detailWarnings"></ul></section>
+            <section><h3>风险提示</h3><ul id="detailWarnings"></ul></section>
           </div>
         </aside>
       </div>
     </main>
 
-    <footer><span>Stored locally in SQLite</span><span>Times displayed in your local timezone</span></footer>
+    <footer><span>数据存储在本地 SQLite</span><span>时间按浏览器所在时区显示</span></footer>
     <script src="/static/app.js" defer></script>
   </body>
 </html>

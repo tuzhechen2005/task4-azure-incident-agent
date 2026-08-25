@@ -47,6 +47,17 @@ def test_dashboard_has_accessible_labels() -> None:
     assert ":focus-visible" in CSS.read_text()
 
 
+def test_dashboard_is_simplified_chinese() -> None:
+    html = HTML.read_text()
+    javascript = JS.read_text()
+
+    assert '<html lang="zh-CN">' in html
+    for label in ("Azure 事件响应中心", "筛选条件", "事件列表", "响应计划"):
+        assert label in html
+    for message in ("正在加载", "刷新失败", "仅本地备用分析"):
+        assert message in javascript
+
+
 def test_dashboard_loads_local_assets() -> None:
     html = HTML.read_text()
 
@@ -66,7 +77,7 @@ def test_dashboard_does_not_render_dynamic_inner_html() -> None:
 def test_severity_has_text_label() -> None:
     javascript = JS.read_text()
 
-    for value in ("SEV-1 Critical", "SEV-2 High", "SEV-3 Medium", "SEV-4 Low"):
+    for value in ("SEV-1 严重", "SEV-2 高", "SEV-3 中", "SEV-4 低"):
         assert value in javascript
 
 

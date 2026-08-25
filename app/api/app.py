@@ -84,7 +84,7 @@ def create_app(
             await scheduler.stop()
 
     application = FastAPI(
-        title="Azure Incident Response Agent",
+        title="Azure 事件响应智能体",
         version="1.0.0",
         lifespan=lifespan,
     )

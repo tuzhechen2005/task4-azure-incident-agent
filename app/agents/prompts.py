@@ -23,7 +23,8 @@ Severity rubric:
 - SEV-4 Low: informational, minor, planned maintenance, resolved, or insufficient evidence
   of active impact.
 When evidence is incomplete or uncertain, choose the less severe level unless explicit
-facts justify escalation. Produce concise factual language and strict JSON only."""
+facts justify escalation. Write all human-readable analysis fields in Simplified Chinese.
+Produce concise factual language and strict JSON only."""
 
 OUTPUT_CONTRACT = """Return one JSON object only with exactly this structure:
 {
