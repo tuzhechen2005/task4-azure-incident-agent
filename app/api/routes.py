@@ -8,7 +8,6 @@ from fastapi import APIRouter, Path, Query, Request
 from fastapi.responses import JSONResponse
 
 from app.api.errors import ApplicationError
-from app.config import Settings
 from app.models.schemas import (
     HealthResponse,
     IncidentListResponse,
@@ -48,7 +47,6 @@ router = APIRouter(prefix="/api")
 def health(request: Request) -> JSONResponse:
     repository = cast(StatsRepository, request.app.state.repository)
     scheduler = request.app.state.scheduler
-    settings = cast(Settings, request.app.state.settings)
     scheduler_started = bool(getattr(scheduler, "is_started", False))
     scheduler_error = getattr(scheduler, "last_error", None)
     last_run = getattr(scheduler, "last_run_at", None)
@@ -62,12 +60,12 @@ def health(request: Request) -> JSONResponse:
         database_state = "unavailable"
         database_available = False
 
-    analysis_mode = "fallback-only" if settings.fallback_only else settings.llm_provider
+    analysis_mode = str(request.app.state.analysis_mode)
     degraded = (
         not database_available
         or not scheduler_started
         or bool(scheduler_error)
-        or settings.fallback_only
+        or analysis_mode == "fallback-only"
     )
     payload = HealthResponse(
         status="degraded" if degraded else "healthy",

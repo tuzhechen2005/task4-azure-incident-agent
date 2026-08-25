@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Protocol
@@ -16,6 +17,8 @@ from app.models.schemas import (
     IncidentRecord,
 )
 from app.storage.repository import IncidentRepository
+
+LOGGER = logging.getLogger(__name__)
 
 
 class FeedFetcher(Protocol):
@@ -45,6 +48,7 @@ class IncidentService:
     def process_cycle(self) -> CycleResult:
         """Run one complete cycle and return safe, exact processing counts."""
         started_at = self._now()
+        LOGGER.info("ingestion_cycle_started")
         fetched_count = 0
         parsed_count = 0
         inserted_count = 0
@@ -61,6 +65,7 @@ class IncidentService:
                 fetched_at=fetched.fetched_at,
             )
         except Exception as error:
+            LOGGER.warning("feed_fetch_failed error_type=%s", type(error).__name__)
             return CycleResult(
                 started_at=started_at,
                 ended_at=self._now(),
@@ -71,6 +76,12 @@ class IncidentService:
         parsed_count = len(parsed.incidents)
         fetched_count = parsed_count + len(parsed.warnings)
         failed_count = len(parsed.warnings)
+        LOGGER.info(
+            "feed_parsed fetched=%d parsed=%d warnings=%d",
+            fetched_count,
+            parsed_count,
+            len(parsed.warnings),
+        )
         if parsed.warnings:
             errors.append(
                 f"Skipped {len(parsed.warnings)} malformed feed entry/entries"
@@ -86,6 +97,9 @@ class IncidentService:
                     == incident.content_fingerprint
                 ):
                     unchanged_count += 1
+                    LOGGER.info(
+                        "incident_deduplicated incident_id=%s", incident.incident_id
+                    )
                     continue
 
                 if existing is not None:
@@ -93,6 +107,11 @@ class IncidentService:
                         update={"detected_at": existing.incident.detected_at}
                     )
                 analysis = self._agent.analyze(AgentInput.from_incident(incident))
+                LOGGER.info(
+                    "incident_analyzed incident_id=%s source=%s",
+                    incident.incident_id,
+                    analysis.analysis_source.value,
+                )
                 self._repository.upsert(
                     IncidentRecord(incident=incident, analysis=analysis)
                 )
@@ -100,11 +119,19 @@ class IncidentService:
                     inserted_count += 1
                 else:
                     updated_count += 1
+                LOGGER.info(
+                    "incident_persisted incident_id=%s action=%s",
+                    incident.incident_id,
+                    "inserted" if existing is None else "updated",
+                )
             except Exception as error:
                 failed_count += 1
                 errors.append(self._safe_error("entry", error))
+                LOGGER.warning(
+                    "incident_processing_failed error_type=%s", type(error).__name__
+                )
 
-        return CycleResult(
+        result = CycleResult(
             started_at=started_at,
             ended_at=self._now(),
             fetched_count=fetched_count,
@@ -115,6 +142,14 @@ class IncidentService:
             failed_count=failed_count,
             errors=errors,
         )
+        LOGGER.info(
+            "ingestion_cycle_completed inserted=%d updated=%d unchanged=%d failed=%d",
+            inserted_count,
+            updated_count,
+            unchanged_count,
+            failed_count,
+        )
+        return result
 
     def _now(self) -> datetime:
         value = self._clock()

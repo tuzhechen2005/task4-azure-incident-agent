@@ -1,8 +1,15 @@
 """Local Uvicorn entry point."""
 
 from app.api.app import create_app
+from app.config import Settings
+from app.logging_config import configure_logging
 
-app = create_app()
+settings = Settings()
+configure_logging(
+    level=settings.log_level,
+    secrets=[settings.llm_api_key.get_secret_value()],
+)
+app = create_app(settings=settings)
 
 
 if __name__ == "__main__":

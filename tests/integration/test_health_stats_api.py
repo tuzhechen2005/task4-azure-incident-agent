@@ -50,7 +50,10 @@ class UnavailableRepository:
 
 def app_settings(*, fallback: bool) -> Settings:
     return Settings.model_validate(
-        {"llm_api_key": SecretStr("") if fallback else SecretStr("test-only-key")}
+        {
+            "llm_provider": "none" if fallback else "injected-test-provider",
+            "llm_api_key": SecretStr("") if fallback else SecretStr("test-only-key"),
+        }
     )
 
 
@@ -142,6 +145,12 @@ def test_health_fallback_analysis_mode(tmp_path: Path) -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "degraded"
     assert response.json()["analysis_mode"] == "fallback-only"
+
+
+def test_default_runtime_reports_fallback_even_when_provider_is_configured() -> None:
+    app = create_app(settings=app_settings(fallback=False))
+
+    assert app.state.analysis_mode == "fallback-only"
 
 
 def test_health_database_unavailable() -> None:

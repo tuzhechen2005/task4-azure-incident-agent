@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import threading
 from datetime import datetime, timedelta, timezone
+
+import pytest
 
 from app.models.schemas import CycleResult
 from app.scheduler import IngestionScheduler
@@ -175,5 +178,21 @@ def test_graceful_shutdown() -> None:
 
         assert instance.is_started is False
         assert instance.is_running is False
+
+    asyncio.run(scenario())
+
+
+def test_logs_degraded_cycle_without_error_details(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    async def scenario() -> None:
+        secret = "secret-cycle-detail"
+        instance = scheduler(OutcomeService([RuntimeError(secret)]))
+
+        with caplog.at_level(logging.INFO):
+            await instance.run_once()
+
+        assert "scheduler_cycle_failed error_type=RuntimeError" in caplog.text
+        assert secret not in caplog.text
 
     asyncio.run(scenario())

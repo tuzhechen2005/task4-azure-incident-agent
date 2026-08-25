@@ -67,6 +67,7 @@ def create_app(
 ) -> FastAPI:
     """Create an app with fully injectable persistence and scheduling dependencies."""
     resolved_settings = settings or Settings()
+    uses_bundled_fallback = scheduler is None
     if repository is None or scheduler is None:
         default_repository, default_scheduler = _default_dependencies(resolved_settings)
         repository = repository or default_repository
@@ -90,6 +91,11 @@ def create_app(
     application.state.settings = resolved_settings
     application.state.repository = repository
     application.state.scheduler = scheduler
+    application.state.analysis_mode = (
+        "fallback-only"
+        if uses_bundled_fallback or resolved_settings.fallback_only
+        else resolved_settings.llm_provider
+    )
 
     @application.middleware("http")
     async def request_id_middleware(

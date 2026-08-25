@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Protocol
 
 from app.models.schemas import CycleResult
+
+LOGGER = logging.getLogger(__name__)
 
 
 class CycleService(Protocol):
@@ -68,6 +71,7 @@ class IngestionScheduler:
         if self.is_started:
             return
         self._stop_event.clear()
+        LOGGER.info("scheduler_started interval_seconds=%s", self._interval_seconds)
         await self.run_once()
         self._task = asyncio.create_task(self._run_loop(), name="incident-ingestion")
 
@@ -77,6 +81,7 @@ class IngestionScheduler:
         if self._task is not None:
             await self._task
             self._task = None
+        LOGGER.info("scheduler_stopped")
 
     async def wait_stopped(self) -> None:
         """Wait for an injected finite scheduler loop, primarily for deterministic tests."""
@@ -87,6 +92,7 @@ class IngestionScheduler:
         """Run one cycle or record an overlap skip without raising cycle failures."""
         if self._cycle_running:
             self.overlap_skips += 1
+            LOGGER.warning("scheduler_cycle_skipped reason=overlap")
             return None
         self._cycle_running = True
         try:
@@ -98,10 +104,16 @@ class IngestionScheduler:
                 self.last_error = None
             else:
                 self.last_error = "; ".join(result.errors) or "cycle reported failures"
+                LOGGER.warning(
+                    "scheduler_cycle_degraded failed=%d", result.failed_count
+                )
+            if result.failed_count == 0:
+                LOGGER.info("scheduler_cycle_succeeded")
             return result
         except Exception as error:
             self.last_run_at = self._now()
             self.last_error = f"cycle failed ({type(error).__name__})"
+            LOGGER.warning("scheduler_cycle_failed error_type=%s", type(error).__name__)
             return None
         finally:
             self._cycle_running = False

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -233,3 +234,19 @@ def test_atomic_service_update(
 
     assert cycle.failed_count == 1
     assert repository.get(stored_before.incident.incident_id) == stored_before
+
+
+def test_logs_safe_stage_summaries_without_exception_details(
+    caplog: pytest.LogCaptureFixture,
+    repository: IncidentRepository,
+) -> None:
+    secret = "secret-provider-token"
+    processor, _ = service(repository, [RuntimeError(secret)])
+
+    with caplog.at_level(logging.INFO):
+        result = processor.process_cycle()
+
+    assert result.failed_count == 1
+    assert "ingestion_cycle_started" in caplog.text
+    assert "feed_fetch_failed error_type=RuntimeError" in caplog.text
+    assert secret not in caplog.text

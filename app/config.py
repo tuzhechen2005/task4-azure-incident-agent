@@ -61,4 +61,6 @@ class Settings(BaseSettings):
     @property
     def fallback_only(self) -> bool:
         """Return whether analysis must use the deterministic local fallback."""
-        return not bool(self.llm_api_key.get_secret_value())
+        return self.llm_provider.strip().casefold() == "none" or not bool(
+            self.llm_api_key.get_secret_value()
+        )
