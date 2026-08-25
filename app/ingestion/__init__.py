@@ -1,0 +1,1 @@
+"""External incident ingestion boundaries."""

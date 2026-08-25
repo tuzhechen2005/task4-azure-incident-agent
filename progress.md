@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-002 — Domain Schemas and Validation (checkpoint)
-- Completed tasks: 2
-- Remaining tasks: 14
+- Current task: TASK-003 — RSS HTTP Client (checkpoint)
+- Completed tasks: 3
+- Remaining tasks: 13
 
 ## Task Progress
 
@@ -45,9 +45,27 @@
 - Full suite: PASS — 25 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (8 source files).
 - Acceptance criteria: PASS — valid round trips, required-field failures, isolated mutable defaults, all enum values, UTC `Z` JSON, URL and confidence validation, and record ID consistency verified.
+- Commit: `919a679` — `feat(models): complete TASK-002 domain schemas`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-003
+
+### TASK-003 — RSS HTTP Client
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/ingestion/__init__.py`, `app/ingestion/rss_client.py`, `tests/unit/test_rss_client.py`, `TASKS.md`, `progress.md`
+- RED tests: Successful fetch metadata, timeout/network/HTTP/empty-body errors, retry limit, and non-retryable behavior in `tests/unit/test_rss_client.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_rss_client.py` failed during collection because `app.ingestion` did not exist, confirming the intended missing client boundary.
+- GREEN implementation: Added a standard-library HTTP transport, injected transport/clock/sleeper boundaries, retrieval metadata, safe typed failures, user agent, finite timeout, and bounded retry behavior.
+- REFACTOR: Extracted retryability/backoff helpers and kept transport/result contracts immutable and narrowly typed.
+- Focused tests: PASS — 7 tests.
+- Full suite: PASS — 32 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (11 source files).
+- Acceptance criteria: PASS — exact bytes/metadata, deterministic bounded retries, typed failure classes, no response-body leakage, and fully mocked networking verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-003
+- Next task: TASK-004
 
 ## Problems, Pitfalls and Solutions
 

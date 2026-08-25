@@ -75,7 +75,7 @@
 
 ## TASK-003 — RSS HTTP Client
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Retrieve a configured feed reliably and map external failures into controlled application errors.
 
@@ -469,7 +469,7 @@
 |---|---|---|
 | TASK-001 | Project Skeleton and Configuration | DONE |
 | TASK-002 | Domain Schemas and Validation | DONE |
-| TASK-003 | RSS HTTP Client | TODO |
+| TASK-003 | RSS HTTP Client | DONE |
 | TASK-004 | Feed Parser | TODO |
 | TASK-005 | Incident Normalization and Identity | TODO |
 | TASK-006 | SQLite Database and Repository | TODO |
