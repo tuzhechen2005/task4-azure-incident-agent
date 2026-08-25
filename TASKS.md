@@ -131,7 +131,7 @@
 
 ## TASK-005 — Incident Normalization and Identity
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Convert raw feed entries into stable, validated normalized incidents.
 
@@ -471,7 +471,7 @@
 | TASK-002 | Domain Schemas and Validation | DONE |
 | TASK-003 | RSS HTTP Client | DONE |
 | TASK-004 | Feed Parser | DONE |
-| TASK-005 | Incident Normalization and Identity | TODO |
+| TASK-005 | Incident Normalization and Identity | DONE |
 | TASK-006 | SQLite Database and Repository | TODO |
 | TASK-007 | LLM Client Interface and Prompt Templates | TODO |
 | TASK-008 | Decision Agent, Validation, and Fallback | TODO |

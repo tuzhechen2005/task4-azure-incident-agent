@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-004 — Feed Parser (checkpoint)
-- Completed tasks: 4
-- Remaining tasks: 12
+- Current task: TASK-005 — Incident Normalization and Identity (checkpoint)
+- Completed tasks: 5
+- Remaining tasks: 11
 
 ## Task Progress
 
@@ -81,9 +81,27 @@
 - Full suite: PASS — 40 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (13 source files).
 - Acceptance criteria: PASS — RSS/Atom fields, empty and invalid feeds, malformed sibling isolation, missing optional fields, safe text extraction, and UTC conversion verified.
+- Commit: `3f33f58` — `feat(ingestion): complete TASK-004 feed parser`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-005
+
+### TASK-005 — Incident Normalization and Identity
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/ingestion/normalizer.py`, `tests/unit/test_normalizer.py`, `TASKS.md`, `progress.md`
+- RED tests: Complete/minimal normalization, source-ID and fallback identity stability, material fingerprint changes, status mapping, invalid required text, and UTC timestamps in `tests/unit/test_normalizer.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_normalizer.py` failed during collection because `app.ingestion.normalizer` did not exist, confirming the intended missing normalization behavior.
+- GREEN implementation: Added conservative text/status/service/region normalization, UTC timestamps, source-ID-preferred deterministic identity, fallback identity, and separate material-content fingerprints.
+- REFACTOR: Extracted canonical text, known-name detection, status, UTC, and hashing helpers to keep identity and fingerprint logic explicit.
+- Focused tests: PASS — 11 tests.
+- Full suite: PASS — 51 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (15 source files).
+- Acceptance criteria: PASS — stable source/fallback identity, material change detection, optional values, conservative extraction, four statuses, validation, and UTC output verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-005
+- Next task: TASK-006
 
 ## Problems, Pitfalls and Solutions
 
