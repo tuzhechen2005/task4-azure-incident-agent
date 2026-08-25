@@ -421,21 +421,21 @@ Package marker files may be added as required. Generated databases, caches, test
 
 Each item must be objectively marked `PASS` or `FAIL` before delivery.
 
-- [ ] AC-001 A fresh local setup starts from documented commands with no source edits.
-- [ ] AC-002 Configuration validates values and keeps secrets out of source control.
-- [ ] AC-003 A fixture feed completes the full fetch-to-dashboard pipeline.
-- [ ] AC-004 RSS timeout, network failure, empty feed, invalid XML, and malformed entry cases do not crash the server.
-- [ ] AC-005 New, changed, and unchanged incidents follow the specified insert/re-analyze/skip behavior.
-- [ ] AC-006 Domain and API data validate against the schemas in Section 6.
-- [ ] AC-007 Decision Agent tests cover all four severities, valid structured output, invalid JSON, missing fields, timeout, provider error, and fallback.
-- [ ] AC-008 No default automated test calls a live feed or live LLM.
-- [ ] AC-009 SQLite persistence survives an application restart and does not create duplicate records.
-- [ ] AC-010 Scheduler runs at startup, repeats at configuration interval, prevents overlap, and shuts down cleanly.
-- [ ] AC-011 All four specified API endpoints satisfy success, empty, filter/pagination, not-found, and relevant error contracts.
-- [ ] AC-012 Dashboard displays health, stats, incidents, severity, analysis, impact, actions, response plan, source, and update time.
-- [ ] AC-013 Dashboard refreshes without reload and visibly handles loading, empty, stale, and error states.
-- [ ] AC-014 Dynamic RSS/LLM strings are rendered safely and severity remains understandable without color.
-- [ ] AC-015 Operational logs and health data expose degraded cycles without leaking secrets.
-- [ ] AC-016 The default full test suite passes offline.
-- [ ] AC-017 `README.md` and `docs/RETROSPECTIVE.md` cover every documentation item in FR-020.
-- [ ] AC-018 The final ZIP contains required source/docs/config examples and excludes secrets, local databases, caches, and build artifacts.
+- [x] AC-001 A fresh local setup starts from documented commands with no source edits.
+- [x] AC-002 Configuration validates values and keeps secrets out of source control.
+- [x] AC-003 A fixture feed completes the full fetch-to-dashboard pipeline.
+- [x] AC-004 RSS timeout, network failure, empty feed, invalid XML, and malformed entry cases do not crash the server.
+- [x] AC-005 New, changed, and unchanged incidents follow the specified insert/re-analyze/skip behavior.
+- [x] AC-006 Domain and API data validate against the schemas in Section 6.
+- [x] AC-007 Decision Agent tests cover all four severities, valid structured output, invalid JSON, missing fields, timeout, provider error, and fallback.
+- [x] AC-008 No default automated test calls a live feed or live LLM.
+- [x] AC-009 SQLite persistence survives an application restart and does not create duplicate records.
+- [x] AC-010 Scheduler runs at startup, repeats at configuration interval, prevents overlap, and shuts down cleanly.
+- [x] AC-011 All four specified API endpoints satisfy success, empty, filter/pagination, not-found, and relevant error contracts.
+- [x] AC-012 Dashboard displays health, stats, incidents, severity, analysis, impact, actions, response plan, source, and update time.
+- [x] AC-013 Dashboard refreshes without reload and visibly handles loading, empty, stale, and error states.
+- [x] AC-014 Dynamic RSS/LLM strings are rendered safely and severity remains understandable without color.
+- [x] AC-015 Operational logs and health data expose degraded cycles without leaking secrets.
+- [x] AC-016 The default full test suite passes offline.
+- [x] AC-017 `README.md` and `docs/RETROSPECTIVE.md` cover every documentation item in FR-020.
+- [x] AC-018 The final ZIP contains required source/docs/config examples and excludes secrets, local databases, caches, and build artifacts.

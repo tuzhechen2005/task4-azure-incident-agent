@@ -437,11 +437,11 @@
 
 ## TASK-016 — Documentation, Retrospective, and Delivery Audit
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Produce complete operator/developer documentation, project retrospective, and final acceptance/ZIP audit without changing product behavior.
 
-**Files:** `README.md`, `docs/RETROSPECTIVE.md`, `.env.example`, `.gitignore`, `requirements.txt`, `SPEC.md` acceptance checklist, documentation validation tests/checklist.
+**Files:** `README.md`, `docs/RETROSPECTIVE.md`, `.env.example`, `.gitignore`, `data/.gitkeep`, `requirements.txt`, `SPEC.md` acceptance checklist, documentation validation tests/checklist, and `scripts/seed_demo.py` plus `scripts/__init__.py` (required for the documented runnable offline dashboard demo).
 
 **Dependencies:** TASK-001 through TASK-015.
 
@@ -482,4 +482,4 @@
 | TASK-013 | Incident List and Detail APIs | DONE |
 | TASK-014 | Dashboard Structure and Rendering | DONE |
 | TASK-015 | Dashboard Polling and End-to-End Integration | DONE |
-| TASK-016 | Documentation, Retrospective, and Delivery Audit | TODO |
+| TASK-016 | Documentation, Retrospective, and Delivery Audit | DONE |

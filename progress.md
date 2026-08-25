@@ -4,12 +4,12 @@
 
 - Project goal: Deliver the complete local Azure incident response agent and monitoring dashboard defined by `SPEC.md` and `TASKS.md`.
 - Goal start time: 2026-08-25 (Asia/Shanghai)
-- Current status: ACTIVE
+- Current status: COMPLETE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-015 — Dashboard Polling and End-to-End Integration (checkpoint)
-- Completed tasks: 15
-- Remaining tasks: 1
+- Current task: COMPLETE — final delivery audit
+- Completed tasks: 16
+- Remaining tasks: 0
 
 ## Task Progress
 
@@ -279,9 +279,27 @@
 - Full suite: PASS — 136 pytest tests plus 5 direct Node tests.
 - Lint/format/type checks: PASS — JavaScript syntax, Ruff format/lint, and mypy (42 source files).
 - Acceptance criteria: PASS — configured initial/interval polling, no overlap, last-good retention, stale recovery, timer cleanup, detail selection, full fixture/fallback pipeline, duplicate skip, restart persistence, and API-visible records/stats verified offline.
+- Commit: `084c49c` — `feat(dashboard): complete TASK-015 polling integration`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-016
+
+### TASK-016 — Documentation, Retrospective, and Delivery Audit
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 14:28 (Asia/Shanghai)
+- Status: DONE
+- Files: `README.md`, `docs/RETROSPECTIVE.md`, `.gitignore`, `data/.gitkeep`, `scripts/__init__.py`, `scripts/seed_demo.py`, `tests/test_documentation.py`, `SPEC.md`, `TASKS.md`, `progress.md`
+- RED tests: Documentation-only task; RED is replaced by the approved validation checklist (fresh install, documented commands, links/paths, manifest/secret scan, final suite, local launch, APIs, dashboard, persistence, fallback, and AC-001–AC-018).
+- RED result: Not applicable by documentation-task rule.
+- GREEN implementation: Added complete operator/developer documentation, retrospective, deterministic idempotent demo seeding, delivery-manifest/secret/documentation tests, and auditable AC checklist evidence.
+- REFACTOR: Aligned all documented paths and settings with code, added generated-artifact ignore patterns and a tracked empty data directory, and documented the intentionally fallback-only bundled runtime.
+- Focused tests: PASS — 8 documentation/delivery checks after the AC checklist was verified.
+- Full suite: PASS — 147 Python tests in the project environment and 147 in a fresh temporary Python environment; 5 direct Node polling tests.
+- Lint/format/type checks: PASS — Ruff format/lint, mypy (45 source files), JavaScript syntax, and `git diff --check`.
+- Acceptance criteria: PASS — AC-001 through AC-018; fresh install, offline fixture pipeline, real local launch, dashboard/static assets, four APIs, filters/404, fallback health, safe operational logs, SQLite duplicate/restart persistence, graceful shutdown, secret/manifest scan, and archive audit.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-016
+- Next task: None
 
 ## Problems, Pitfalls and Solutions
 
@@ -345,6 +363,19 @@
 - Prevention: Apply Ruff formatting immediately after frontend RED/GREEN even when production files are HTML/CSS/JavaScript.
 - Status: RESOLVED
 
+### P-006 — Health mode could diverge from the bundled analysis runtime
+
+- Occurred: 2026-08-25 (Asia/Shanghai)
+- Task: Final TASK-016 audit
+- Symptom: Configuring an arbitrary provider key could make `/api/health` report a provider mode even though the bundled dependency factory always constructs the deterministic fallback agent.
+- Root cause: Health inferred analysis mode from credential presence instead of the dependency actually wired into the application.
+- Investigation: Compared `_default_dependencies` with the health calculation and added a failing integration test for configured credentials on the default runtime.
+- Solution: Store the actual analysis mode in application state, treat the bundled factory as fallback-only, and have health read that state. Also added stage-based service/scheduler logs that expose degraded processing without exception details or secrets.
+- Files/tests: `app/api/app.py`, `app/api/routes.py`, `app/config.py`, `app/services/incident_service.py`, `app/scheduler.py`, `main.py`, focused health/log safety tests
+- Prevention: Runtime health must derive from wired capabilities, and final audits must compare configuration claims with concrete dependency construction.
+- Commit: `8440eea` — `fix(observability): report fallback runtime accurately`; pushed to `origin/main`.
+- Status: RESOLVED
+
 ## Decisions and Assumptions
 
 ### D-001 — Initialize the empty repository on `main`
@@ -365,4 +396,13 @@
 
 ## Final Validation
 
-Pending completion of TASK-001 through TASK-016.
+- Fresh install: PASS — new temporary virtual environment, dependency install from `requirements.txt`, and 147-test offline suite without source edits.
+- Automated suite: PASS — 147 Python tests and 5 direct Node tests; no live feed or live LLM calls.
+- Quality gates: PASS — Ruff format/lint, mypy, JavaScript syntax, and whitespace audit.
+- Local application: PASS — fixture database seeded with 2 records; Uvicorn startup cycle degraded safely against an unavailable loopback feed; dashboard returned 200 with configured 17-second polling.
+- APIs: PASS — health, stats, incident list/filter/detail returned validated data; missing detail returned 404; static assets were served.
+- Persistence and deduplication: PASS — two repeat seeds and a full application restart retained exactly 2 records.
+- Fallback and observability: PASS — health returned 200/degraded, database available, scheduler running, analysis mode fallback-only, and a safe fetch error; stage logs omitted exception details.
+- Acceptance checklist: PASS — AC-001 through AC-018 are checked in `SPEC.md`.
+- Delivery manifest/security: PASS — tracked-source and archive scans exclude `.env`, virtual environments, caches, databases, logs, reports/build outputs, and archives; common token patterns are absent.
+- Git/remote: PASS — independent task commits and final audit fix pushed to `origin/main`; final clean-tree check follows the TASK-016 documentation commit.
