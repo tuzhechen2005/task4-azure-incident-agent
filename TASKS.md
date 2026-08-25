@@ -48,7 +48,7 @@
 
 ## TASK-002 — Domain Schemas and Validation
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Define all validated enums and data contracts from SPEC Section 6.
 
@@ -468,7 +468,7 @@
 | Task | Title | Status |
 |---|---|---|
 | TASK-001 | Project Skeleton and Configuration | DONE |
-| TASK-002 | Domain Schemas and Validation | TODO |
+| TASK-002 | Domain Schemas and Validation | DONE |
 | TASK-003 | RSS HTTP Client | TODO |
 | TASK-004 | Feed Parser | TODO |
 | TASK-005 | Incident Normalization and Identity | TODO |

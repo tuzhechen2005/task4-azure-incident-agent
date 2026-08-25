@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-001 — Project Skeleton and Configuration (checkpoint)
-- Completed tasks: 1
-- Remaining tasks: 15
+- Current task: TASK-002 — Domain Schemas and Validation (checkpoint)
+- Completed tasks: 2
+- Remaining tasks: 14
 
 ## Task Progress
 
@@ -27,9 +27,27 @@
 - Full suite: PASS — 11 tests.
 - Lint/format/type checks: PASS — Ruff format (5 files), Ruff lint, and mypy (5 source files).
 - Acceptance criteria: PASS — defaults/overrides load, invalid values fail actionably, missing credentials enable fallback-only mode, secrets are masked, and clean test discovery works.
+- Commit: `9499094` — `feat(config): complete TASK-001 project configuration`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-002
+
+### TASK-002 — Domain Schemas and Validation
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/models/__init__.py`, `app/models/schemas.py`, `tests/unit/test_schemas.py`, `TASKS.md`, `progress.md`
+- RED tests: Raw/normalized incidents, all severity values, confidence and ID consistency, isolated response-plan defaults, JSON round trip, required fields, and supporting API/cycle contracts in `tests/unit/test_schemas.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_schemas.py` failed during collection because `app.models` did not exist, confirming the intended missing schema layer.
+- GREEN implementation: Added strict enums and Pydantic contracts for incidents, agent input/output, response plans, records, list/stats/cycle/error/health responses, UTC normalization, safe list defaults, and incident-ID consistency.
+- REFACTOR: Replaced wildcard model exports with an explicit public schema API and centralized list/text and UTC normalization.
+- Focused tests: PASS — 14 tests.
+- Full suite: PASS — 25 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (8 source files).
+- Acceptance criteria: PASS — valid round trips, required-field failures, isolated mutable defaults, all enum values, UTC `Z` JSON, URL and confidence validation, and record ID consistency verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-002
+- Next task: TASK-003
 
 ## Problems, Pitfalls and Solutions
 
