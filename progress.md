@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-011 — FastAPI Application and Error Handling (checkpoint)
-- Completed tasks: 11
-- Remaining tasks: 5
+- Current task: TASK-012 — Health and Statistics APIs (checkpoint)
+- Completed tasks: 12
+- Remaining tasks: 4
 
 ## Task Progress
 
@@ -207,9 +207,27 @@
 - Full suite: PASS — 105 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (36 source files).
 - Acceptance criteria: PASS — offline injected startup/shutdown, dependency identity, request IDs, sanitized unexpected errors, static/API isolation, and executable entry point verified.
+- Commit: `c36dc3d` — `feat(api): complete TASK-011 FastAPI application`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-012
+
+### TASK-012 — Health and Statistics APIs
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/api/routes.py`, `app/api/app.py`, `tests/integration/test_health_stats_api.py`, `TASKS.md`, `progress.md`
+- RED tests: Healthy/degraded RSS/fallback/database unavailable health, empty/seeded/timestamp stats, and health schema in `tests/integration/test_health_stats_api.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/integration/test_health_stats_api.py` produced eight expected `404`/missing-field failures because neither route existed.
+- GREEN implementation: Added registered health/stats routes with repository-derived counts, scheduler timestamps, fallback/degraded state, safe database unavailability handling, `200` degradation semantics, and `503` only for local data failure.
+- REFACTOR: Centralized repository stats protocol use and computed health state from explicit database, scheduler, analysis-mode, and last-run inputs.
+- Focused tests: PASS — 8 tests.
+- Full suite: PASS — 113 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (38 source files).
+- Acceptance criteria: PASS — schema-valid healthy/degraded/fallback/unavailable health and empty/seeded/timestamp statistics verified with correct status codes.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-012
+- Next task: TASK-013
 
 ## Problems, Pitfalls and Solutions
 

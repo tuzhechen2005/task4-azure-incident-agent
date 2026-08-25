@@ -17,6 +17,7 @@ from app.api.errors import (
     application_error_handler,
     unexpected_error_handler,
 )
+from app.api.routes import router as api_router
 from app.config import Settings
 from app.ingestion.rss_client import RSSClient
 from app.scheduler import IngestionScheduler
@@ -102,6 +103,7 @@ def create_app(
 
     application.add_exception_handler(ApplicationError, application_error_handler)  # type: ignore[arg-type]
     application.add_exception_handler(Exception, unexpected_error_handler)
+    application.include_router(api_router)
 
     frontend_directory = Path(__file__).resolve().parents[2] / "frontend"
     application.mount(

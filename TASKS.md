@@ -328,11 +328,11 @@
 
 ## TASK-012 — Health and Statistics APIs
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Implement `/api/health` and `/api/stats` exactly as specified.
 
-**Files:** `app/api/routes.py`, `tests/integration/test_health_stats_api.py`.
+**Files:** `app/api/routes.py`, `tests/integration/test_health_stats_api.py`, and `app/api/app.py` (required to register the API router).
 
 **Dependencies:** TASK-006, TASK-010, TASK-011.
 
@@ -478,7 +478,7 @@
 | TASK-009 | Incident Processing Service | DONE |
 | TASK-010 | Scheduler and Lifecycle | DONE |
 | TASK-011 | FastAPI Application and Error Handling | DONE |
-| TASK-012 | Health and Statistics APIs | TODO |
+| TASK-012 | Health and Statistics APIs | DONE |
 | TASK-013 | Incident List and Detail APIs | TODO |
 | TASK-014 | Dashboard Structure and Rendering | TODO |
 | TASK-015 | Dashboard Polling and End-to-End Integration | TODO |
