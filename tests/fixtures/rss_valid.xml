@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Azure Status</title>
+    <item>
+      <guid>event-100</guid>
+      <title>Azure SQL degradation</title>
+      <description><![CDATA[<p>Connections are <strong>intermittently failing</strong>.</p>]]></description>
+      <link>https://example.test/incidents/100</link>
+      <pubDate>Mon, 24 Aug 2026 20:30:00 -0700</pubDate>
+    </item>
+    <item>
+      <guid>event-101</guid>
+      <title>Storage recovered</title>
+      <description>Service has recovered.</description>
+      <link>https://example.test/incidents/101</link>
+      <pubDate>Tue, 25 Aug 2026 04:00:00 +0000</pubDate>
+    </item>
+  </channel>
+</rss>

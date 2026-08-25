@@ -103,7 +103,7 @@
 
 ## TASK-004 — Feed Parser
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Parse RSS/Atom content into `RawIncident` objects while isolating malformed entries.
 
@@ -470,7 +470,7 @@
 | TASK-001 | Project Skeleton and Configuration | DONE |
 | TASK-002 | Domain Schemas and Validation | DONE |
 | TASK-003 | RSS HTTP Client | DONE |
-| TASK-004 | Feed Parser | TODO |
+| TASK-004 | Feed Parser | DONE |
 | TASK-005 | Incident Normalization and Identity | TODO |
 | TASK-006 | SQLite Database and Repository | TODO |
 | TASK-007 | LLM Client Interface and Prompt Templates | TODO |

@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-003 — RSS HTTP Client (checkpoint)
-- Completed tasks: 3
-- Remaining tasks: 13
+- Current task: TASK-004 — Feed Parser (checkpoint)
+- Completed tasks: 4
+- Remaining tasks: 12
 
 ## Task Progress
 
@@ -63,9 +63,27 @@
 - Full suite: PASS — 32 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (11 source files).
 - Acceptance criteria: PASS — exact bytes/metadata, deterministic bounded retries, typed failure classes, no response-body leakage, and fully mocked networking verified.
+- Commit: `d0852ca` — `feat(ingestion): complete TASK-003 RSS client`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-004
+
+### TASK-004 — Feed Parser
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/ingestion/parser.py`, `tests/fixtures/rss_valid.xml`, `tests/fixtures/rss_empty.xml`, `tests/fixtures/rss_malformed_entry.xml`, `tests/unit/test_parser.py`, `TASKS.md`, `progress.md`
+- RED tests: RSS and Atom mapping, empty/invalid feeds, malformed entry isolation, optional fields, plain-text descriptions, and timezone conversion in `tests/unit/test_parser.py` using local fixtures.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_parser.py` failed during collection because `app.ingestion.parser` did not exist, confirming the intended missing parser behavior.
+- GREEN implementation: Added RSS/Atom XML parsing, UTC date handling, safe visible-text extraction, feed-level errors, entry-level warnings, and sibling isolation.
+- REFACTOR: Separated XML lookup, date parsing, link extraction, and visible-text sanitization helpers; used the schema validation boundary for URL coercion.
+- Focused tests: PASS — 8 tests.
+- Full suite: PASS — 40 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (13 source files).
+- Acceptance criteria: PASS — RSS/Atom fields, empty and invalid feeds, malformed sibling isolation, missing optional fields, safe text extraction, and UTC conversion verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-004
+- Next task: TASK-005
 
 ## Problems, Pitfalls and Solutions
 
@@ -91,6 +109,18 @@
 - Solution: Applied Ruff formatting and centralized `_env_file=None` behind one typed test helper with a narrow `call-arg` suppression.
 - Files/tests: `app/logging_config.py`, `tests/unit/test_config.py`
 - Prevention: Run formatter before the combined quality gate; keep third-party dynamic API suppressions narrow and documented.
+- Status: RESOLVED
+
+### P-003 — HTML text extraction inserted whitespace before punctuation
+
+- Occurred: 2026-08-25 (Asia/Shanghai)
+- Task: TASK-004
+- Symptom: The first GREEN run produced `failing .` instead of `failing.` for text split by an inline HTML tag.
+- Root cause: Extracted text fragments were joined with spaces regardless of whether the boundary was an inline or block element.
+- Investigation: The other seven parser tests passed; the failing fixture isolated the issue to inline `<strong>` boundaries.
+- Solution: Join inline fragments directly while inserting explicit separators only for block-level elements. The subsequent type gate also found Pydantic's runtime URL coercion was not visible to mypy, so parser construction was routed through the validated boundary instead of suppressed.
+- Files/tests: `app/ingestion/parser.py`, `tests/unit/test_parser.py`
+- Prevention: Keep fixtures containing both inline formatting and block markup in parser coverage.
 - Status: RESOLVED
 
 ## Decisions and Assumptions
