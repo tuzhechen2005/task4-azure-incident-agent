@@ -12,6 +12,25 @@ RETROSPECTIVE = (ROOT / "docs" / "RETROSPECTIVE.md").read_text()
 SPEC = (ROOT / "SPEC.md").read_text()
 
 
+def delivery_files() -> list[str]:
+    """List committed files, or archive files when Git metadata is absent."""
+    result = subprocess.run(
+        ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        return result.stdout.splitlines()
+
+    runtime_directories = {"__pycache__", ".pytest_cache", ".mypy_cache"}
+    return [
+        str(path.relative_to(ROOT))
+        for path in ROOT.rglob("*")
+        if path.is_file()
+        and not any(
+            part in runtime_directories for part in path.relative_to(ROOT).parts
+        )
+    ]
+
+
 def test_readme_covers_required_operator_topics() -> None:
     for heading in (
         "Architecture and data flow",
@@ -92,9 +111,7 @@ def test_acceptance_checklist_is_complete() -> None:
 
 
 def test_tracked_delivery_manifest_excludes_generated_or_secret_files() -> None:
-    tracked = subprocess.run(
-        ["git", "ls-files"], cwd=ROOT, check=True, capture_output=True, text=True
-    ).stdout.splitlines()
+    tracked = delivery_files()
     forbidden_parts = {".env", ".venv", "__pycache__", ".pytest_cache", ".mypy_cache"}
     forbidden_suffixes = {".db", ".sqlite", ".sqlite3", ".log", ".zip"}
 
@@ -105,9 +122,7 @@ def test_tracked_delivery_manifest_excludes_generated_or_secret_files() -> None:
 
 
 def test_tracked_text_has_no_common_secret_tokens() -> None:
-    tracked = subprocess.run(
-        ["git", "ls-files"], cwd=ROOT, check=True, capture_output=True, text=True
-    ).stdout.splitlines()
+    tracked = delivery_files()
     pattern = re.compile(r"(?:gho_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})")
 
     for name in tracked:
