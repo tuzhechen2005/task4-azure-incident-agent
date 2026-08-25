@@ -215,7 +215,7 @@
 
 ## TASK-008 — Decision Agent, Validation, and Fallback
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Produce validated incident analyses from the LLM client and remain functional on every specified LLM failure.
 
@@ -474,7 +474,7 @@
 | TASK-005 | Incident Normalization and Identity | DONE |
 | TASK-006 | SQLite Database and Repository | DONE |
 | TASK-007 | LLM Client Interface and Prompt Templates | DONE |
-| TASK-008 | Decision Agent, Validation, and Fallback | TODO |
+| TASK-008 | Decision Agent, Validation, and Fallback | DONE |
 | TASK-009 | Incident Processing Service | TODO |
 | TASK-010 | Scheduler and Lifecycle | TODO |
 | TASK-011 | FastAPI Application and Error Handling | TODO |

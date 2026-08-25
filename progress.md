@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-007 — LLM Client Interface and Prompt Templates (checkpoint)
-- Completed tasks: 7
-- Remaining tasks: 9
+- Current task: TASK-008 — Decision Agent, Validation, and Fallback (checkpoint)
+- Completed tasks: 8
+- Remaining tasks: 8
 
 ## Task Progress
 
@@ -135,9 +135,27 @@
 - Full suite: PASS — 70 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (24 source files).
 - Acceptance criteria: PASS — deterministic prompts, all severities/schema fields, untrusted-data delimiting, environment-secret exclusion, fake protocol compatibility, and error categories verified.
+- Commit: `d6750b2` — `feat(agent): complete TASK-007 LLM prompt boundary`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-008
+
+### TASK-008 — Decision Agent, Validation, and Fallback
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/agents/decision_agent.py`, `tests/unit/test_decision_agent.py`, `TASKS.md`, `progress.md`
+- RED tests: Valid LLM output/all severities, malformed/missing/wrong-ID output, timeout/provider failures, one repair, active/resolved fallback severity, deterministic fallback, and missing-client mode in `tests/unit/test_decision_agent.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_decision_agent.py` failed during collection because `app.agents.decision_agent` did not exist, confirming the intended missing analysis behavior.
+- GREEN implementation: Added strict JSON/schema/ID validation, application-owned analysis metadata, bounded repair/provider retries, typed error handling, and deterministic status-based fallback plans.
+- REFACTOR: Separated response validation, fallback construction, and UTC clock validation; sanitized fallback reasons to controlled categories rather than provider messages.
+- Focused tests: PASS — 15 tests.
+- Full suite: PASS — 85 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (26 source files).
+- Acceptance criteria: PASS — LLM success/all severities, JSON/schema/ID failures, timeout/provider errors, one repair, exhausted repair, missing client, and deterministic active/resolved fallback verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-008
+- Next task: TASK-009
 
 ## Problems, Pitfalls and Solutions
 
