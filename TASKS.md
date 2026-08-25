@@ -272,7 +272,7 @@
 
 ## TASK-010 — Scheduler and Lifecycle
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Run ingestion on startup and at the configured interval with overlap protection and graceful shutdown.
 
@@ -476,7 +476,7 @@
 | TASK-007 | LLM Client Interface and Prompt Templates | DONE |
 | TASK-008 | Decision Agent, Validation, and Fallback | DONE |
 | TASK-009 | Incident Processing Service | DONE |
-| TASK-010 | Scheduler and Lifecycle | TODO |
+| TASK-010 | Scheduler and Lifecycle | DONE |
 | TASK-011 | FastAPI Application and Error Handling | TODO |
 | TASK-012 | Health and Statistics APIs | TODO |
 | TASK-013 | Incident List and Detail APIs | TODO |

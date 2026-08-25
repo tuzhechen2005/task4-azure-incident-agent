@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-009 — Incident Processing Service (checkpoint)
-- Completed tasks: 9
-- Remaining tasks: 7
+- Current task: TASK-010 — Scheduler and Lifecycle (checkpoint)
+- Completed tasks: 10
+- Remaining tasks: 6
 
 ## Task Progress
 
@@ -171,9 +171,27 @@
 - Full suite: PASS — 94 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (29 source files).
 - Acceptance criteria: PASS — new/multiple/unchanged/changed flows, per-entry and fetch failure isolation, empty feeds, exact counts, no duplicate identities, and atomic failure preservation verified.
+- Commit: `06ded07` — `feat(service): complete TASK-009 incident processing`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-010
+
+### TASK-010 — Scheduler and Lifecycle
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/scheduler.py`, `tests/unit/test_scheduler.py`, `TASKS.md`, `progress.md`
+- RED tests: Startup/repeat, overlap protection, exception recovery, last-success state, and graceful shutdown with deterministic async waiters in `tests/unit/test_scheduler.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/unit/test_scheduler.py` failed during collection because `app.scheduler` did not exist, confirming the intended missing scheduler behavior.
+- GREEN implementation: Added startup/repeating async lifecycle, injectable no-sleep waiter, thread-isolated synchronous cycles, overlap protection, exception recovery, safe state timestamps/errors, and graceful stop.
+- REFACTOR: Separated interval waiting, cycle execution, loop lifecycle, and clock validation; exposed read-only lifecycle state through focused properties.
+- Focused tests: PASS — 6 tests.
+- Full suite: PASS — 100 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (31 source files).
+- Acceptance criteria: PASS — no-sleep startup/repeat, overlap skip, exception recovery, success/error timestamps, and graceful shutdown verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-010
+- Next task: TASK-011
 
 ## Problems, Pitfalls and Solutions
 
