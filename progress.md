@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-010 — Scheduler and Lifecycle (checkpoint)
-- Completed tasks: 10
-- Remaining tasks: 6
+- Current task: TASK-011 — FastAPI Application and Error Handling (checkpoint)
+- Completed tasks: 11
+- Remaining tasks: 5
 
 ## Task Progress
 
@@ -189,9 +189,27 @@
 - Full suite: PASS — 100 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (31 source files).
 - Acceptance criteria: PASS — no-sleep startup/repeat, overlap skip, exception recovery, success/error timestamps, and graceful shutdown verified.
+- Commit: `6d79baf` — `feat(scheduler): complete TASK-010 lifecycle scheduling`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-011
+
+### TASK-011 — FastAPI Application and Error Handling
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `app/api/__init__.py`, `app/api/app.py`, `app/api/errors.py`, `tests/integration/test_app.py`, `main.py`, `requirements.txt`, `TASKS.md`, `progress.md`
+- RED tests: Lifespan start/stop, injected dependencies, controlled request IDs, sanitized unexpected errors, and non-shadowing static mount in `tests/integration/test_app.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/integration/test_app.py` failed during collection because `app.api` did not exist, confirming the intended missing web application layer.
+- GREEN implementation: Added injectable FastAPI factory/lifespan, default local dependency wiring, request IDs, controlled and sanitized error envelopes, isolated `/static` mount, and local Uvicorn entry point.
+- REFACTOR: Separated default dependency construction, repository/scheduler lifecycle protocols, middleware, and safe error handlers; mounted static assets under a non-API prefix.
+- Focused tests: PASS — 5 tests.
+- Full suite: PASS — 105 tests.
+- Lint/format/type checks: PASS — Ruff format/lint and mypy (36 source files).
+- Acceptance criteria: PASS — offline injected startup/shutdown, dependency identity, request IDs, sanitized unexpected errors, static/API isolation, and executable entry point verified.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-011
+- Next task: TASK-012
 
 ## Problems, Pitfalls and Solutions
 

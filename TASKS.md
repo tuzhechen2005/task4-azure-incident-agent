@@ -300,11 +300,11 @@
 
 ## TASK-011 — FastAPI Application and Error Handling
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Create the application factory, lifecycle wiring, request IDs, static serving boundary, and standard error responses.
 
-**Files:** `app/api/__init__.py`, `app/api/app.py`, `app/api/errors.py`, `tests/integration/test_app.py`, `main.py`.
+**Files:** `app/api/__init__.py`, `app/api/app.py`, `app/api/errors.py`, `tests/integration/test_app.py`, `main.py`, and `requirements.txt` (required FastAPI/Uvicorn/TestClient dependencies).
 
 **Dependencies:** TASK-006, TASK-009, TASK-010.
 
@@ -477,7 +477,7 @@
 | TASK-008 | Decision Agent, Validation, and Fallback | DONE |
 | TASK-009 | Incident Processing Service | DONE |
 | TASK-010 | Scheduler and Lifecycle | DONE |
-| TASK-011 | FastAPI Application and Error Handling | TODO |
+| TASK-011 | FastAPI Application and Error Handling | DONE |
 | TASK-012 | Health and Statistics APIs | TODO |
 | TASK-013 | Incident List and Detail APIs | TODO |
 | TASK-014 | Dashboard Structure and Rendering | TODO |
