@@ -1,0 +1,61 @@
+{
+  "health": {
+    "status": "degraded",
+    "database": "available",
+    "scheduler": "running",
+    "analysis_mode": "fallback-only",
+    "last_ingestion_at": "2026-08-25T10:00:00Z",
+    "last_successful_ingestion_at": "2026-08-25T10:00:00Z",
+    "last_error": null
+  },
+  "stats": {
+    "total": 1,
+    "status_counts": {"ACTIVE": 1},
+    "severity_counts": {"SEV-3": 1},
+    "latest_incident_at": "2026-08-25T10:00:00Z",
+    "last_ingestion_at": "2026-08-25T10:00:00Z",
+    "last_successful_ingestion_at": "2026-08-25T10:00:00Z"
+  },
+  "record": {
+    "incident": {
+      "incident_id": "inc-1",
+      "title": "Azure SQL degradation",
+      "description": "Intermittent errors reported.",
+      "services": ["Azure SQL"],
+      "regions": ["East US"],
+      "status": "ACTIVE",
+      "source": "fixture",
+      "source_event_id": "event-1",
+      "source_url": "https://example.test/feed.xml",
+      "source_link": "https://example.test/incidents/1",
+      "published_at": "2026-08-25T09:55:00Z",
+      "detected_at": "2026-08-25T10:00:00Z",
+      "updated_at": "2026-08-25T10:00:00Z",
+      "content_fingerprint": "fixture"
+    },
+    "analysis": {
+      "incident_id": "inc-1",
+      "severity": "SEV-3",
+      "confidence": 0.25,
+      "affected_services": ["Azure SQL"],
+      "affected_regions": ["East US"],
+      "scope": "Public status scope only.",
+      "summary": "Azure SQL degradation is reported.",
+      "potential_impact": ["Requests may fail"],
+      "recommended_actions": ["Check telemetry"],
+      "response_plan": {
+        "immediate_actions": ["Confirm impact"],
+        "investigation_steps": ["Review error rates"],
+        "mitigation_options": ["Use approved retries"],
+        "communication_plan": ["Update service owners"],
+        "recovery_checks": ["Confirm baseline"],
+        "escalation_conditions": ["Escalate if impact expands"]
+      },
+      "rationale": "Conservative fallback.",
+      "analyzed_at": "2026-08-25T10:00:00Z",
+      "analysis_source": "FALLBACK",
+      "model": null,
+      "warnings": ["Tenant impact is not confirmed"]
+    }
+  }
+}

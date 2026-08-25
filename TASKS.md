@@ -381,7 +381,7 @@
 
 ## TASK-014 — Dashboard Structure and Rendering
 
-**Status:** TODO
+**Status:** DONE
 
 **Goal:** Build the accessible local dashboard and deterministic rendering/state logic.
 
@@ -480,6 +480,6 @@
 | TASK-011 | FastAPI Application and Error Handling | DONE |
 | TASK-012 | Health and Statistics APIs | DONE |
 | TASK-013 | Incident List and Detail APIs | DONE |
-| TASK-014 | Dashboard Structure and Rendering | TODO |
+| TASK-014 | Dashboard Structure and Rendering | DONE |
 | TASK-015 | Dashboard Polling and End-to-End Integration | TODO |
 | TASK-016 | Documentation, Retrospective, and Delivery Audit | TODO |

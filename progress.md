@@ -7,9 +7,9 @@
 - Current status: ACTIVE
 - Current branch: `main`
 - GitHub repository: `tuzhechen2005/task4-azure-incident-agent`
-- Current task: TASK-013 — Incident List and Detail APIs (checkpoint)
-- Completed tasks: 13
-- Remaining tasks: 3
+- Current task: TASK-014 — Dashboard Structure and Rendering (checkpoint)
+- Completed tasks: 14
+- Remaining tasks: 2
 
 ## Task Progress
 
@@ -243,9 +243,27 @@
 - Full suite: PASS — 123 tests.
 - Lint/format/type checks: PASS — Ruff format/lint and mypy (39 source files).
 - Acceptance criteria: PASS — empty/populated schemas, order, pagination, all filters and combination, invalid queries, detail, and standard request-ID 404 verified.
+- Commit: `0af39ef` — `feat(api): complete TASK-013 incident endpoints`
+- Push: PASS — pushed to `origin/main`.
+- Next task: TASK-014
+
+### TASK-014 — Dashboard Structure and Rendering
+
+- Start time: 2026-08-25 (Asia/Shanghai)
+- Completion time: 2026-08-25 (Asia/Shanghai)
+- Status: DONE
+- Files: `frontend/index.html`, `frontend/styles.css`, `frontend/app.js`, `tests/frontend/test_dashboard_static.py`, `tests/fixtures/dashboard_mock.json`, `TASKS.md`, `progress.md`
+- RED tests: Required semantic regions, accessible labels, local assets, no dynamic `innerHTML`, severity text, all UI states, and mock-data contract in `tests/frontend/test_dashboard_static.py`.
+- RED result: `.venv/bin/python -m pytest -q tests/frontend/test_dashboard_static.py` produced seven expected missing-file failures because the frontend did not exist.
+- GREEN implementation: Added semantic responsive HTML, accessible controls/states, high-contrast CSS, deterministic state/filter/renderer functions, safe DOM text/list rendering, severity text labels, and complete incident/analysis/response-plan detail mapping.
+- REFACTOR: Centralized DOM lookup/text/list helpers, pure filter/time/severity transforms, render stages, and shared state; preserved native keyboard behavior through buttons/forms.
+- Focused tests: PASS — 7 tests.
+- Full suite: PASS — 130 tests.
+- Lint/format/type checks: PASS — JavaScript syntax, Ruff format/lint, and mypy (40 source files).
+- Acceptance criteria: PASS — complete mock mapping, loading/empty/error/stale/selected/no-selection states, no build step, safe text rendering, text-plus-color severity, focus/accessibility, and responsive layout verified statically.
 - Commit: Pending
 - Push: Pending
-- Next task: TASK-014
+- Next task: TASK-015
 
 ## Problems, Pitfalls and Solutions
 
@@ -295,6 +313,18 @@
 - Solution: Removed the unused import and reran all quality gates.
 - Files/tests: `tests/unit/test_repository.py`
 - Prevention: Run lint immediately after focused GREEN and remove scaffolding imports during refactor.
+- Status: RESOLVED
+
+### P-005 — New dashboard static test needed formatting
+
+- Occurred: 2026-08-25 (Asia/Shanghai)
+- Task: TASK-014
+- Symptom: The first combined quality gate reported one file that Ruff would reformat.
+- Root cause: The static test was added before the repository formatter pass.
+- Investigation: JavaScript-focused tests already passed; Ruff isolated the issue to `test_dashboard_static.py`.
+- Solution: Applied the configured formatter and reran JavaScript syntax, lint, type, and full test gates.
+- Files/tests: `tests/frontend/test_dashboard_static.py`
+- Prevention: Apply Ruff formatting immediately after frontend RED/GREEN even when production files are HTML/CSS/JavaScript.
 - Status: RESOLVED
 
 ## Decisions and Assumptions
