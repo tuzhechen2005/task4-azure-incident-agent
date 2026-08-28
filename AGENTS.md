@@ -1,215 +1,173 @@
-# AI Development Instructions
+# AI 开发说明
 
-This repository contains the **Azure Incident Response Agent and Local Monitoring Dashboard** project. These instructions apply to every AI coding session in this repository.
+本仓库用于开发“Azure 事件响应智能体与本地监控面板”。每个 AI 开发会话都必须遵守本文件。
 
-## Repository Safety
+## 仓库安全
 
-- Treat every file under `sources/` as read-only reference material.
-- Do not edit, rename, move, or delete files under `sources/`.
-- Do not copy code from Tasks 1–3 wholesale. Reuse only small, generic modules after verifying that they satisfy this project's specification and tests.
-- Never expose secrets, API keys, connection strings, or private incident data in code, tests, logs, screenshots, or documentation.
+- `sources/` 下的文件为只读参考资料；不得编辑、移动、重命名或删除。
+- 不得直接整体复制 Tasks 1–3 的代码。只能在确认符合当前规格和测试后复用小型通用模块。
+- 不得在代码、测试、日志、截图、文档或提交中泄露密钥、API Key、连接字符串或私有事件数据。
+- 保留用户已有的无关改动；不得以清理、格式化或重构为由覆盖它们。
 
-## Required Methodology
+## 开发方法
 
-This project uses **Spec-Driven Development (SDD)** for scope and contracts and **Test-Driven Development (TDD)** for implementation.
+本项目采用：
 
-- `SPEC.md` defines what the finished system must do.
-- `TASKS.md` defines the implementation units, dependencies, required tests, and progress.
-- Tests are executable evidence that an implementation satisfies the specification.
-- Implementation must not begin until the human has approved the specification.
+- **SDD（规格驱动开发）**：`SPEC.md` 定义系统要做什么。
+- **TDD（测试驱动开发）**：测试是实现符合规格的可执行证据。
+- `TASKS.md` 定义任务范围、依赖、验收标准、测试要求和进度。
+- `progress.md` 记录 Goal、任务过程、真实问题、根因、解决方案和最终验证。
 
-## Session Context Recovery
+只有在规格已获批准后才可以实现业务代码。
 
-At the beginning of every implementation session:
+## 会话上下文恢复
 
-1. Read this entire `AGENTS.md`.
-2. Read the relevant sections of `SPEC.md`.
-3. Read all of `TASKS.md` and find the first eligible `TODO` task in the recommended order.
-4. Inspect the existing files related to that task; do not trust remembered chat context.
-5. Check the working tree and preserve unrelated user changes.
-6. Run the existing test suite and record the baseline. If it already fails, report the failure and determine whether the current task can safely continue.
-7. Restate the selected task's scope, dependencies, files, acceptance criteria, and tests before changing code.
+每次开始实现前，必须：
 
-The repository is the durable project memory. Conversation history is supporting context only.
+1. 完整阅读本文件。
+2. 阅读 `SPEC.md` 中与当前任务有关的部分。
+3. 阅读 `TASKS.md`，按推荐顺序找出第一个依赖均为 `DONE` 的 `TODO` 任务。
+4. 阅读 `progress.md`，了解现状、已知问题和已作决定。
+5. 检查相关代码、测试、Git 状态和近期提交；不要依赖聊天记忆。
+6. 运行已有测试并记录基线。若基线失败，先判断是否能安全继续。
+7. 在修改前明确当前任务的范围、文件、依赖、验收标准和测试。
 
-## Goal Mode and Sequential Task Rule
+仓库文件是长期上下文；聊天记录仅作辅助。
 
-- Work on exactly one `TASK-XXX` at a time.
-- Select a task only when all listed dependencies are `DONE`.
-- Do not implement later tasks, speculative abstractions, or unrelated cleanup.
-- Do not change files outside the task's `Files` list unless the task cannot be completed otherwise. If an extra file is required, explain why before changing it and record it in `TASKS.md`.
-- If a task affects more than three production modules, first write a short implementation plan listing files, interfaces, tests, and risks.
-- When a Goal is active, treat the Goal as the stopping boundary and each `TASK-XXX` as a sequential checkpoint.
-- Complete only one task at a time. After its Definition of Done is satisfied and its commit is created, immediately select the next eligible `TODO` task and repeat Red–Green–Refactor.
-- Do not pause for confirmation between tasks unless a blocker, specification conflict, destructive action, missing authority, or material product decision requires human input.
-- Continue until the Goal is genuinely complete, every task in its scope is `DONE`, or progress is genuinely blocked.
-- Provide concise progress updates between tasks so the human can see the completed task, test result, commit, and next task.
+## Goal 模式与顺序执行
 
-## Red–Green–Refactor Workflow
+- 同一时间只处理一个 `TASK-XXX`，不得并行实现多个任务。
+- 只能开始依赖均为 `DONE` 的任务。
+- 不得提前实现后续任务、投机性抽象或无关清理。
+- 除非确有必要，不得修改当前任务 `Files` 列表之外的文件；如需额外文件，必须说明原因并记录到 `TASKS.md` 与 `progress.md`。
+- 若一个任务涉及超过三个生产模块，先写简短实施计划：文件、接口、测试和风险。
+- Goal 是停止边界，Task 是连续检查点。每个任务完成、验证通过并提交后，立即进入下一个符合条件的任务。
+- 不得在 Task 之间等待确认；仅在真正阻塞、规格冲突、不可恢复的风险、缺少授权或重大产品决策时暂停。
+- 持续工作直到 Goal 范围内任务全部 `DONE`、Goal 真正完成或确实被阻塞。
+- 每个任务检查点都要简短汇报：测试、提交、推送状态、解决的问题和下一任务。
 
-Every testable task must follow this sequence.
+## Red–Green–Refactor
 
-### RED — write a failing test first
+每个可测试任务必须完整执行以下流程。
 
-1. Translate the task's acceptance criteria into tests.
-2. Add only the tests needed for the current task.
-3. Run the new tests before production implementation.
-4. Confirm that they fail for the expected missing behavior, not because of an unrelated syntax, import, fixture, or environment error.
-5. Record the failing command and concise reason in the completion report.
+### RED：先写会失败的测试
 
-Do not write production behavior first and backfill tests later. A documentation-only task may replace RED with a documented validation checklist.
+1. 将当前任务的验收标准转换成测试。
+2. 仅添加当前任务需要的测试。
+3. 在实现生产代码前运行新测试。
+4. 确认失败原因是目标行为尚未实现，而不是语法、导入、夹具或环境错误。
+5. 在 `progress.md` 记录测试命令和失败原因。
 
-### GREEN — implement the minimum behavior
+不得先实现功能再补测试。纯文档任务可使用可验证的检查清单代替 RED。
 
-1. Write the smallest implementation that satisfies the current tests and specification.
-2. Do not implement future requirements in advance.
-3. Run focused tests until they pass.
-4. Run all previously passing tests to detect regressions.
+### GREEN：最小实现
 
-### REFACTOR — improve without changing behavior
+1. 只写能使当前测试通过的最小实现。
+2. 不提前实现未来需求。
+3. 运行聚焦测试直到通过。
+4. 运行所有既有测试，确认没有回归。
 
-- Remove duplication and improve naming, typing, structure, and readability only where relevant to the current task.
-- Do not change public contracts or expand scope.
-- Run focused and full tests again after refactoring.
+### REFACTOR：保持行为不变地改进
 
-## Testing Rules
+- 仅在当前任务范围内消除重复、优化命名、类型、结构和可读性。
+- 不得改变公开契约或扩大功能范围。
+- 重构后重新运行聚焦测试和完整测试套件。
 
-- Unit tests must be deterministic, isolated, and runnable offline.
-- RSS tests must use fixtures and mocked HTTP responses; never depend on a live feed.
-- Decision Agent tests must mock the LLM client; never consume a real API in the default test suite.
-- Time, randomness, and scheduler behavior must be controllable in tests.
-- Storage tests must use a temporary database, never the user's working database.
-- API tests must verify status codes and response schemas, including empty and error states.
-- Tests must cover success, boundary, invalid-input, timeout, dependency-failure, duplicate, and fallback behavior where relevant.
-- Optional live integration tests must be clearly marked and excluded from the default test command.
+## 测试规则
 
-## Source of Truth and Conflict Handling
+- 单元测试必须离线、确定、隔离、可重复执行。
+- RSS 测试必须使用 fixture 和 mock HTTP；默认测试不得访问真实 RSS。
+- Decision Agent 测试必须 mock `LLMClient`；默认测试不得调用真实 LLM。
+- 时间、随机性和调度器必须可被测试控制。
+- 存储测试使用临时数据库，绝不使用用户的工作数据库。
+- API 测试必须覆盖状态码、响应 schema、空状态和错误状态。
+- 相关任务必须覆盖成功、边界、非法输入、超时、依赖失败、重复和 fallback。
+- 可选的真实集成测试必须明确标记，并排除在默认测试命令之外。
 
-For product behavior, use this priority:
+## 事实来源与冲突处理
 
-1. Human's latest explicit requirement
+产品行为的优先级为：
+
+1. 用户最新明确要求
 2. `SPEC.md`
-3. The current task in `TASKS.md`
-4. Existing tests
-5. Existing implementation
+3. `TASKS.md` 中当前任务
+4. 既有测试
+5. 既有实现
 
-This `AGENTS.md` is authoritative for development process and repository safety.
+本文件对开发流程和仓库安全具有最高约束力。若发生冲突：停止实现冲突行为、说明影响、不得静默改规格或弱化测试；获得批准后先更新规格与任务，再实现。
 
-If two sources conflict:
+## 工程约束与代码规范
 
-- Stop before implementing the conflicting behavior.
-- Describe the conflict and its practical effect.
-- Do not silently change `SPEC.md`, reinterpret acceptance criteria, weaken a test, or preserve incorrect existing behavior.
-- Obtain human approval for a specification change, then update `SPEC.md` and affected tasks before implementation.
-
-## Engineering Constraints
-
-- Follow the KISS principle. This is a local, demonstrable project, not a production-scale Azure platform.
-- Use the architecture and contracts in `SPEC.md`; do not introduce microservices, containers, Redis, Kafka, Kubernetes, or a frontend framework unless the specification is explicitly amended.
-- Keep external integrations behind interfaces so they can be mocked.
-- Validate all data crossing RSS, LLM, persistence, and HTTP boundaries.
-- Prefer explicit, readable code over premature generalization.
-- Keep configuration outside source code and provide safe documented defaults.
-- Log operational events without logging secrets or full sensitive payloads.
-
-## Code Quality Standards
-
-### General
-
-- Keep functions and modules focused on one responsibility; prefer composition over hidden global state.
-- Use descriptive names and remove dead code, commented-out code, debug prints, and unused dependencies before committing.
-- Keep public contracts explicit. Validate data at external boundaries and avoid catching exceptions without handling or re-raising them meaningfully.
-- Comments must explain intent or constraints, not restate obvious code. Public modules, classes, and non-obvious functions require concise documentation.
-- Use UTF-8, a final newline, consistent formatting, and no trailing whitespace.
-- Never weaken tests, disable checks, or add broad ignore rules merely to make validation pass.
+- 遵循 KISS：本项目是可本地演示的应用，不是生产级 Azure 平台。
+- 未经规格修改，不引入微服务、容器编排、Redis、Kafka、Kubernetes 或前端框架。
+- 外部依赖必须置于可注入接口之后；所有 RSS、LLM、持久化和 HTTP 边界都要校验数据。
+- 使用清晰、显式、可维护的代码，避免隐藏全局状态和过度设计。
+- 配置不得硬编码；日志不得含秘密或完整敏感负载。
+- 删除死代码、注释掉的旧代码、调试输出和未使用依赖；注释只解释意图或约束。
+- 统一 UTF-8、文件末尾换行和无尾随空格；不得通过跳过检查、弱化测试或扩大忽略规则获取“通过”。
 
 ### Python
 
-- Follow PEP 8 and the project-configured formatter/linter. Use a maximum line length of 100 unless generated content requires otherwise.
-- Add type hints to public functions, methods, constructors, and important internal boundaries. Avoid untyped dictionaries when a declared schema exists.
-- Order imports as standard library, third-party, then local modules; do not use wildcard imports.
-- Prefer small pure functions for parsing and normalization. Inject network, clock, LLM, scheduler, and storage dependencies for testability.
-- Use `pathlib` for paths, timezone-aware UTC datetimes, structured logging instead of `print`, and context managers for resources.
+- 遵循 PEP 8 和项目配置的 formatter/linter；最大行长为 100（生成内容除外）。
+- 为公开函数、方法、构造器和重要内部边界添加类型标注；已有 schema 时避免无类型字典。
+- 导入顺序：标准库、第三方、本地模块；禁止通配符导入。
+- 解析与标准化优先使用小型纯函数；网络、时钟、LLM、调度器和存储必须可注入。
+- 使用 `pathlib`、带时区的 UTC 时间、结构化日志和资源上下文管理器。
 
-### HTML, CSS, and JavaScript
+### HTML、CSS、JavaScript
 
-- Use semantic HTML, accessible labels, keyboard-visible focus, and responsive layouts.
-- Use `const` by default and `let` only for reassignment; avoid implicit globals and keep API/state/rendering concerns separate.
-- Never place untrusted RSS or LLM content into `innerHTML`; render it through safe text APIs.
-- Keep CSS selectors and component names predictable; avoid inline styles and unnecessary duplication.
+- 使用语义化 HTML、可访问标签、清晰焦点和响应式布局。
+- JavaScript 默认 `const`，仅重新赋值时用 `let`；不得使用隐式全局变量。
+- 分离 API 获取、状态转换与 DOM 渲染。
+- RSS 与 LLM 文本不得写入 `innerHTML`，必须使用安全的文本 API。
+- 避免内联样式、命名混乱和重复 CSS。
 
-### Tests
+### 测试
 
-- Name tests after observable behavior and keep Arrange–Act–Assert structure clear.
-- A test must have one primary behavioral reason to fail. Reuse fixtures without hiding important setup.
-- Run formatting, linting, type checks, focused tests, and the full default suite when those checks are configured for the project.
+- 测试名称描述可观察行为，结构清晰地体现 Arrange–Act–Assert。
+- 每个测试只应有一个主要失败原因；可复用 fixture 但不得隐藏关键设置。
+- 若项目已配置 formatter、lint、类型检查，则每个任务完成前均必须运行并通过。
 
-## Git and Commit Discipline
+## Git 与提交纪律
 
-- The repository must maintain a readable history with one logical completed task per commit.
-- Before starting a task, inspect `git status`, the current branch, and recent history. Preserve unrelated user changes and never include them in a task commit.
-- Do not commit during RED while tests intentionally fail. Commit only after GREEN/REFACTOR, all required checks pass, and `TASKS.md` is updated to `DONE`.
-- Stage files explicitly by path. Review the staged diff and verify that it contains only the current task, its tests, and required documentation/status updates.
-- Use Conventional Commit style: `<type>(<scope>): <summary>`, with the task ID in the summary or body. Example: `feat(config): complete TASK-001 project configuration`.
-- Use `feat` for new behavior, `fix` for corrections, `test` for test-only changes, `refactor` for behavior-preserving restructuring, `docs` for documentation, and `chore` for tooling or maintenance.
-- Keep the subject imperative, specific, and concise. Add a body when decisions, migration notes, risks, or verification commands need explanation.
-- Do not bundle multiple completed tasks into one commit. Do not amend, squash, rebase, force-push, or rewrite existing history unless the human explicitly requests it.
-- Never commit secrets, `.env`, local databases, logs, caches, virtual environments, or generated artifacts.
-- Creating local commits is required during Goal execution. Pushing commits, creating branches, tags, pull requests, or releases requires explicit human instruction unless the active Goal explicitly includes it.
-- If commit creation fails, keep the task work intact, report the failure, and resolve it before advancing to the next task.
+- 每个完成的任务一个清晰、可审查的提交。
+- 开始前检查 `git status`、分支和近期历史；绝不把无关用户改动带入提交。
+- RED 阶段不得提交。只有 GREEN/REFACTOR 完成、全部检查通过、`TASKS.md` 与 `progress.md` 更新后才可提交。
+- 按路径显式暂存；检查 staged diff 只包含当前任务的实现、测试、必要文档和状态更新。
+- 提交遵循 Conventional Commits：`<type>(<scope>): <summary>`，标题或正文须含 Task ID。例如：`feat(config): complete TASK-001 project configuration`。
+- `feat` 用于新行为，`fix` 用于修复，`test` 用于仅测试改动，`refactor` 用于不改变行为的重构，`docs` 用于文档，`chore` 用于工具维护。
+- 禁止把多个任务合并提交；未经明确授权不得 amend、squash、rebase、改写历史或 force push。
+- 不得提交 `.env`、密钥、数据库、日志、缓存、虚拟环境或生成物。
+- Goal 中要求创建本地提交。只有 Goal 明确授权或用户明确要求时，才可推送、建分支、打 tag、建 PR 或发布。
+- 提交失败时保留工作并解决问题；未成功提交不得进入下一任务。
 
-## Status Management
+## 状态与完成定义
 
-Valid task states are `TODO`, `IN PROGRESS`, `BLOCKED`, and `DONE`.
+任务状态只能是 `TODO`、`IN PROGRESS`、`BLOCKED`、`DONE`。
 
-- Change a task from `TODO` to `IN PROGRESS` only when work begins.
-- Use `BLOCKED` only when a concrete unmet dependency or required human decision prevents safe progress; document the blocker.
-- Change a task to `DONE` only after every Definition of Done item is satisfied.
-- Do not mark dependent tasks complete automatically.
-- Preserve task history and do not renumber task IDs after implementation begins.
+- 开始时：`TODO → IN PROGRESS`。
+- 只有实际依赖或需要人类决策阻止推进时才可标记 `BLOCKED`，并记录原因。
+- 每个任务只有同时满足下列条件才可 `DONE`：
+  - 依赖均已 `DONE`，验收标准全部满足。
+  - 测试先于生产实现创建，并观察到有效 RED。
+  - 聚焦测试、完整默认测试套件、已配置格式化、lint 和类型检查均通过。
+  - 已覆盖相关异常、超时、重复和 fallback。
+  - 未引入无关或未来任务功能；重构未改变行为。
+  - 配置、文档、`TASKS.md`、`progress.md` 已更新。
+  - staged diff 仅包含当前任务，且无秘密与生成物。
+  - 已创建一个逻辑独立的 Conventional Commit。
 
-## Definition of Done
+## 任务检查点报告
 
-A task is `DONE` only when all applicable items are true:
+每个任务完成后记录并汇报：任务 ID 与标题、修改文件、先写的测试、RED 原因、GREEN 最小实现、重构、聚焦与完整测试结果、验收结果、提交 hash/标题、推送状态、解决的问题与下一任务。汇报后在 Goal 仍活跃时立即继续。
 
-- [ ] All dependencies were already `DONE`.
-- [ ] Every acceptance criterion is satisfied.
-- [ ] Required tests were written before production implementation.
-- [ ] The RED failure was observed and was caused by the missing behavior.
-- [ ] Focused tests pass.
-- [ ] The full default test suite passes.
-- [ ] Relevant invalid-input, timeout, duplicate, and fallback cases are covered.
-- [ ] No unrelated or future-task functionality was added.
-- [ ] Refactoring, if performed, preserved behavior and tests still pass.
-- [ ] Configuration and documentation affected by the task are current.
-- [ ] No secrets, generated databases, caches, or build artifacts were committed.
-- [ ] `TASKS.md` status was updated accurately.
-- [ ] Formatting, linting, and type checks configured for the project pass.
-- [ ] The staged diff contains only the current task's changes.
-- [ ] The completed task is recorded in one logical Conventional Commit.
+Goal 结束时提供总报告：完成任务、所有提交、最终验证、验收结果、风险、未完成项和远端状态。
 
-## Task Checkpoint Report
+## 禁止事项
 
-After each task, report this checkpoint and then continue to the next eligible task while the Goal remains active:
-
-1. Completed task ID and title.
-2. Files added or changed.
-3. Tests written first.
-4. RED command and expected failure reason.
-5. Minimum implementation added for GREEN.
-6. Refactoring performed, or `None`.
-7. Focused and full test results.
-8. Acceptance-criteria checklist.
-9. Commit hash and subject.
-10. Next task selected, or the reason the Goal is complete/blocked.
-
-At the end of the Goal, provide one consolidated report covering all completed tasks, commits, validation results, remaining risks, and any intentionally unfinished work.
-
-## Prohibited Actions
-
-- Do not implement business code while the specification is awaiting approval.
-- Do not work on multiple tasks concurrently. Goal mode may complete multiple tasks sequentially in one continuous run.
-- Do not call a live LLM or live RSS feed from the default tests.
-- Do not make destructive repository changes or overwrite unrelated user work.
-- Do not mark a task `DONE` merely because code was written.
-- Do not stop after a successful task checkpoint while an active Goal still has eligible tasks in scope.
+- 规格未获批准前不得实现业务代码。
+- 不得并发处理多个任务；Goal 模式只能顺序连续处理。
+- 默认测试不得访问真实 LLM 或 RSS。
+- 不得进行破坏性仓库操作或覆盖无关用户改动。
+- 不得仅因写了代码就标记任务 `DONE`。
+- 活跃 Goal 存在可执行任务时，不得在成功检查点后停止。
