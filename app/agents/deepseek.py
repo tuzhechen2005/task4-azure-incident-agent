@@ -1,4 +1,4 @@
-"""Azure OpenAI Responses API adapter for the provider-neutral LLM boundary."""
+"""DeepSeek Responses API adapter for the provider-neutral LLM boundary."""
 
 from __future__ import annotations
 
@@ -70,21 +70,21 @@ def _response_schema() -> dict[str, object]:
     }
 
 
-class AzureOpenAIClient:
-    """Call one Azure OpenAI deployment and return validated JSON text upstream."""
+class DeepSeekClient:
+    """Call a DeepSeek model and return validated JSON text upstream."""
 
     def __init__(
         self,
         *,
-        endpoint: str,
+        base_url: str,
         api_key: str,
-        deployment: str,
+        model: str,
         sdk_client: OpenAISDKClient | None = None,
         sdk_factory: SDKFactory | None = None,
     ) -> None:
-        if not endpoint.strip() or not api_key or not deployment.strip():
-            raise ValueError("Azure OpenAI endpoint, key, and deployment are required")
-        self._deployment = deployment.strip()
+        if not base_url.strip() or not api_key or not model.strip():
+            raise ValueError("DeepSeek base URL, API key, and model are required")
+        self._model = model.strip()
         if sdk_client is not None:
             self._client = sdk_client
             return
@@ -92,8 +92,7 @@ class AzureOpenAIClient:
             from openai import OpenAI
 
             sdk_factory = cast(SDKFactory, OpenAI)
-        base_url = f"{endpoint.rstrip('/')}/openai/v1/"
-        self._client = sdk_factory(base_url=base_url, api_key=api_key)
+        self._client = sdk_factory(base_url=base_url.rstrip("/"), api_key=api_key)
 
     def generate(
         self,
@@ -104,7 +103,7 @@ class AzureOpenAIClient:
     ) -> LLMResponse:
         try:
             response = self._client.responses.create(
-                model=self._deployment,
+                model=self._model,
                 input=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
@@ -124,19 +123,17 @@ class AzureOpenAIClient:
             self._raise_mapped_error(error)
         content = getattr(response, "output_text", None)
         if not isinstance(content, str) or not content.strip():
-            raise LLMInvalidResponseError("Azure OpenAI returned no text output")
-        return LLMResponse(content=content, model=self._deployment)
+            raise LLMInvalidResponseError("DeepSeek returned no text output")
+        return LLMResponse(content=content, model=self._model)
 
     @staticmethod
     def _raise_mapped_error(error: Exception) -> None:
         error_name = type(error).__name__
-        safe_message = "Azure OpenAI request failed"
+        safe_message = "DeepSeek request failed"
         if error_name == "APITimeoutError":
             raise LLMTimeoutError(safe_message) from error
         if error_name == "RateLimitError":
             raise LLMRateLimitError(safe_message) from error
         if error_name == "AuthenticationError":
             raise LLMAuthenticationError(safe_message) from error
-        if error_name in {"APIConnectionError", "APIError", "InternalServerError"}:
-            raise LLMProviderError(safe_message) from error
         raise LLMProviderError(safe_message) from error

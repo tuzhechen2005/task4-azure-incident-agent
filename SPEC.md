@@ -75,7 +75,7 @@ RSS 超时、网络/HTTP 错误、空 feed、坏 XML、单条坏事件、LLM 超
 
 ## 配置、目录与验收
 
-主要配置：`AZURE_STATUS_RSS_URL`、`RSS_TIMEOUT_SECONDS`、`RSS_MAX_RETRIES`、`INGESTION_INTERVAL_SECONDS`、`DASHBOARD_POLL_SECONDS`、`DATABASE_PATH`、`LLM_PROVIDER`、`LLM_MODEL`、`LLM_API_KEY`、`AZURE_OPENAI_ENDPOINT`、`AZURE_OPENAI_DEPLOYMENT`、`AZURE_OPENAI_API_KEY`、`LLM_TIMEOUT_SECONDS`、`LLM_MAX_RETRIES`、`LOG_LEVEL`。仅当 provider 为 `azure_openai` 且 Azure 三项配置完整时启用真实 Responses API，否则使用 fallback-only。
+主要配置：`AZURE_STATUS_RSS_URL`、`RSS_TIMEOUT_SECONDS`、`RSS_MAX_RETRIES`、`INGESTION_INTERVAL_SECONDS`、`DASHBOARD_POLL_SECONDS`、`DATABASE_PATH`、`LLM_PROVIDER`、`LLM_BASE_URL`、`LLM_MODEL`、`LLM_API_KEY`、`LLM_TIMEOUT_SECONDS`、`LLM_MAX_RETRIES`、`LOG_LEVEL`。真实 Decision Agent 直接调用 DeepSeek 官方 API；仅当 provider 为 `deepseek` 且 Base URL、模型和 Key 完整时启用，否则使用 fallback-only。默认模型为 `deepseek-v4-pro`，默认 Base URL 为 `https://api.deepseek.com`。不要求 Azure 订阅、Azure OpenAI 资源或模型部署。
 
 目录：`app/`（config、models、ingestion、agents、storage、services、api、scheduler）、`frontend/`、`tests/`、`docs/`、`data/`、`main.py`、`README.md`。
 

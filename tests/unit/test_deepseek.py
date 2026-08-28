@@ -4,7 +4,6 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.agents.azure_openai import AzureOpenAIClient
 from app.agents.client import (
     LLMAuthenticationError,
     LLMInvalidResponseError,
@@ -12,6 +11,7 @@ from app.agents.client import (
     LLMRateLimitError,
     LLMTimeoutError,
 )
+from app.agents.deepseek import DeepSeekClient
 
 
 class FakeResponses:
@@ -31,13 +31,13 @@ class FakeSDK:
         self.responses = FakeResponses(outcome)
 
 
-def client(outcome: object) -> tuple[AzureOpenAIClient, FakeSDK]:
+def client(outcome: object) -> tuple[DeepSeekClient, FakeSDK]:
     sdk = FakeSDK(outcome)
     return (
-        AzureOpenAIClient(
-            endpoint="https://example.openai.azure.com",
+        DeepSeekClient(
+            base_url="https://api.deepseek.com",
             api_key="test-secret",
-            deployment="incident-agent",
+            model="deepseek-v4-pro",
             sdk_client=sdk,
         ),
         sdk,
@@ -54,9 +54,9 @@ def test_generate_sends_prompts_schema_model_and_timeout() -> None:
     )
 
     assert response.content == '{"incident_id":"inc-1"}'
-    assert response.model == "incident-agent"
+    assert response.model == "deepseek-v4-pro"
     call = sdk.responses.calls[0]
-    assert call["model"] == "incident-agent"
+    assert call["model"] == "deepseek-v4-pro"
     assert call["timeout"] == 12
     assert call["input"] == [
         {"role": "system", "content": "system"},
@@ -95,19 +95,19 @@ def test_generate_maps_provider_errors(
     assert "sensitive provider detail" not in str(caught.value)
 
 
-def test_endpoint_is_normalized_to_azure_v1_base_url() -> None:
+def test_sdk_uses_configured_base_url_and_key() -> None:
     created: dict[str, object] = {}
 
     def factory(**kwargs: object) -> FakeSDK:
         created.update(kwargs)
         return FakeSDK(SimpleNamespace(output_text="{}"))
 
-    AzureOpenAIClient(
-        endpoint="https://example.openai.azure.com/",
+    DeepSeekClient(
+        base_url="https://api.deepseek.com/",
         api_key="test-secret",
-        deployment="incident-agent",
+        model="deepseek-v4-pro",
         sdk_factory=factory,
     )
 
-    assert created["base_url"] == "https://example.openai.azure.com/openai/v1/"
+    assert created["base_url"] == "https://api.deepseek.com"
     assert created["api_key"] == "test-secret"

@@ -4,10 +4,10 @@
 
 - 项目目标：交付 `SPEC.md` 与 `TASKS.md` 规定的本地 Azure 事件响应智能体和监控面板。
 - 开始时间：2026-08-25（Asia/Shanghai）。
-- 当前状态：已完成 TASK-017；等待推送与最终审计。
+- 当前状态：已完成 TASK-018；真实智能体已改为直连 DeepSeek V4 Pro。
 - 当前分支：`main`。
 - GitHub 仓库：`tuzhechen2005/task4-azure-incident-agent`。
-- 已完成任务：17；剩余任务：0。
+- 已完成任务：18；剩余任务：0。
 
 ## 任务进度
 
@@ -30,6 +30,26 @@
 | TASK-015 | DONE | 轮询、失败保留与端到端 fixture 流程。 | 轮询、重复、重启持久化通过。 |
 | TASK-016 | DONE | README、复盘、离线演示和交付审计。 | 全量测试、质量检查和验收清单完成。 |
 | TASK-017 | DONE | Azure OpenAI Responses API 适配器、严格 JSON Schema、配置、应用接线与文档。 | RED 按预期失败；160 项 Python、5 项 Node 测试及全部质量检查通过；`3860ff3`。 |
+| TASK-018 | DONE | DeepSeek V4 Pro 直连、移除 Azure 托管配置、应用接线与中文文档。 | RED 按预期失败；160 项 Python、5 项 Node 测试及全部质量检查通过。 |
+
+### TASK-018 实施计划
+
+- 生产文件：新增 `app/agents/deepseek.py`，修改配置、应用工厂和启动日志脱敏，移除 Azure OpenAI 专用适配器。
+- 接口：保留既有 `LLMClient.generate` 契约和严格 JSON Schema；运行配置改为 `LLM_PROVIDER`、`LLM_BASE_URL`、`LLM_MODEL`、`LLM_API_KEY`。
+- 测试：先替换为 DeepSeek 配置、适配器、应用接线和文档契约测试，观察因实现缺失而产生的有效 RED，再完成最小实现并运行全量检查。
+- 风险：提供商兼容层可能与 OpenAI SDK 参数存在差异；通过可注入假 SDK 验证请求，不在默认测试中调用计费 API，真实调用失败时继续安全 fallback。
+
+### TASK-018 详细记录
+
+- 开始/完成时间：2026-08-29（Asia/Shanghai）。
+- RED：`.venv/bin/python -m pytest -q tests/unit/test_deepseek.py tests/unit/test_config.py tests/integration/test_health_stats_api.py tests/test_documentation.py` 在收集阶段因 `app.agents.deepseek` 不存在而失败，证明 DeepSeek 直连尚未实现。
+- GREEN：新增 DeepSeek Responses API 适配器，以 `https://api.deepseek.com` 为默认 Base URL、以 `deepseek-v4-pro` 为默认模型，复用 system/user prompt、严格 JSON Schema、错误映射和安全 fallback；应用工厂改为按 `LLM_PROVIDER=deepseek` 接线。
+- REFACTOR：移除 Azure OpenAI Endpoint、Deployment、Key 及专用适配器，统一为 `LLM_BASE_URL`、`LLM_MODEL`、`LLM_API_KEY`，并保持提供商中立的 `LLMClient` 契约。
+- 文档：更新 `.env.example`、README、规格与复盘，明确 Azure 只作为被监控的数据源，真实智能体直接调用 DeepSeek，不要求 Azure 订阅或模型部署。
+- 聚焦测试：40 项通过；完整测试：160 项 Python 与 5 项 Node 通过。
+- 质量检查：Ruff format、Ruff lint、mypy、`node --check`、`pip check`、`git diff --check` 和秘密扫描全部通过。
+- 云端验证：默认测试未调用计费 API；SDK 构造、请求结构、模型、输出提取和错误映射均通过可注入假 SDK 离线验证。
+- 提交：本次 TASK-018 独立 Conventional Commit（hash 见 Git 历史）。
 
 ### TASK-017 详细记录
 
@@ -82,6 +102,10 @@
 
 症状：`.env` 中保留空的 `AZURE_OPENAI_ENDPOINT=` 时配置模型直接报 URL 校验错误，无法进入 fallback-only。根因是可选 URL 字段没有在 Pydantic URL 解析前将空字符串标准化为 `None`。解决：增加 `mode="before"` 字段校验器，并测试 Endpoint、Deployment、Key 任一缺失都会安全进入 fallback。
 
+### P-010：DeepSeek 生产代码完成后文档契约仍失败
+
+症状：首轮 GREEN 中 39 项通过、文档配置测试因 README 缺少 `LLM_BASE_URL` 而失败。根因是代码配置已切换，但中文操作文档仍保留 Azure OpenAI 变量。解决：同步更新 README、`.env.example`、规格和复盘，并由文档测试验证全部环境变量一致。
+
 ## 关键决定
 
 - D-001：在空仓库上初始化 `main`，仓库名与文件夹名均为 `task4-azure-incident-agent`。
@@ -89,7 +113,8 @@
 - D-003：使用 SQLite 而非外部数据库，满足本地演示、持久化、去重和查询需求。
 - D-004：将 LLM 放在 `LLMClient` 边界后，默认测试只验证应用行为而不调用真实模型。
 - D-005：真实路径采用 Azure OpenAI Responses API 与严格 JSON Schema；默认离线测试使用可注入假 SDK，真实凭据只放在本地环境。
+- D-006：根据用户最新要求，Azure 仅作为公共故障数据源；真实 Decision Agent 改为直接调用 DeepSeek V4 Pro Responses API，不再要求 Azure OpenAI 托管层。
 
 ## 最终验证
 
-已执行 160 项完整离线 Python 测试、5 项 Node 轮询测试、格式化、lint、类型检查、依赖检查、本地启动、fixture 到 API/面板流程、fallback-only 模式、SQLite 重启持久化以及交付审计。AC-001 至 AC-018 均已记录为通过；交付物不包含 `.env`、秘密、本地数据库、缓存、日志、虚拟环境或生成文件。真实 Azure OpenAI 云请求需要调用者配置自己的资源与凭据，当前环境未执行计费调用。
+已执行 160 项完整离线 Python 测试、5 项 Node 轮询测试、格式化、lint、类型检查、依赖检查、fixture 到 API/面板流程、fallback-only 模式、SQLite 重启持久化以及交付审计。AC-001 至 AC-018 均已记录为通过；交付物不包含 `.env`、秘密、本地数据库、缓存、日志、虚拟环境或生成文件。真实 DeepSeek 云请求需要调用者配置自己的 API Key 和账户额度，当前环境未执行计费调用。

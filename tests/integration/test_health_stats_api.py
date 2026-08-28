@@ -4,8 +4,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi.testclient import TestClient
-from pydantic import SecretStr
-
 from app.api.app import create_app
 from app.config import Settings
 from app.models.schemas import (
@@ -51,14 +49,10 @@ class UnavailableRepository:
 def app_settings(*, fallback: bool) -> Settings:
     return Settings.model_validate(
         {
-            "llm_provider": "none" if fallback else "azure_openai",
-            "azure_openai_endpoint": None
-            if fallback
-            else "https://example.openai.azure.com",
-            "azure_openai_deployment": "" if fallback else "incident-agent",
-            "azure_openai_api_key": SecretStr("")
-            if fallback
-            else SecretStr("test-only-key"),
+            "llm_provider": "none" if fallback else "deepseek",
+            "llm_base_url": "https://api.deepseek.com",
+            "llm_model": "deepseek-v4-pro",
+            "llm_api_key": "" if fallback else "test-only-key",
         }
     )
 
@@ -156,7 +150,7 @@ def test_health_fallback_analysis_mode(tmp_path: Path) -> None:
 def test_default_runtime_reports_real_agent_when_provider_is_configured() -> None:
     app = create_app(settings=app_settings(fallback=False))
 
-    assert app.state.analysis_mode == "azure_openai"
+    assert app.state.analysis_mode == "deepseek"
 
 
 def test_health_database_unavailable() -> None:

@@ -26,12 +26,11 @@ def test_settings_defaults() -> None:
     assert settings.dashboard_poll_seconds == 30
     assert settings.database_path == Path("data/incidents.db")
     assert settings.llm_provider == "none"
-    assert settings.llm_model == ""
+    assert str(settings.llm_base_url) == "https://api.deepseek.com/"
+    assert settings.llm_model == "deepseek-v4-pro"
+    assert settings.llm_api_key.get_secret_value() == ""
     assert settings.llm_timeout_seconds == 30
     assert settings.llm_max_retries == 1
-    assert settings.azure_openai_endpoint is None
-    assert settings.azure_openai_deployment == ""
-    assert settings.azure_openai_api_key.get_secret_value() == ""
     assert settings.log_level == "INFO"
 
 
@@ -43,13 +42,11 @@ def test_settings_environment_override(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("DASHBOARD_POLL_SECONDS", "15")
     monkeypatch.setenv("DATABASE_PATH", "var/test.db")
     monkeypatch.setenv("LLM_PROVIDER", "example")
+    monkeypatch.setenv("LLM_BASE_URL", "https://llm.example.test/v1")
     monkeypatch.setenv("LLM_MODEL", "model-1")
     monkeypatch.setenv("LLM_API_KEY", "top-secret")
     monkeypatch.setenv("LLM_TIMEOUT_SECONDS", "9")
     monkeypatch.setenv("LLM_MAX_RETRIES", "3")
-    monkeypatch.setenv("AZURE_OPENAI_ENDPOINT", "https://example.openai.azure.com")
-    monkeypatch.setenv("AZURE_OPENAI_DEPLOYMENT", "incident-agent")
-    monkeypatch.setenv("AZURE_OPENAI_API_KEY", "azure-secret")
     monkeypatch.setenv("LOG_LEVEL", "debug")
 
     settings = load_settings()
@@ -61,13 +58,11 @@ def test_settings_environment_override(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.dashboard_poll_seconds == 15
     assert settings.database_path == Path("var/test.db")
     assert settings.llm_provider == "example"
+    assert str(settings.llm_base_url) == "https://llm.example.test/v1"
     assert settings.llm_model == "model-1"
     assert settings.llm_api_key.get_secret_value() == "top-secret"
     assert settings.llm_timeout_seconds == 9
     assert settings.llm_max_retries == 3
-    assert str(settings.azure_openai_endpoint) == "https://example.openai.azure.com/"
-    assert settings.azure_openai_deployment == "incident-agent"
-    assert settings.azure_openai_api_key.get_secret_value() == "azure-secret"
     assert settings.log_level == "DEBUG"
 
 
@@ -101,13 +96,13 @@ def test_settings_missing_llm_key_enables_fallback_mode() -> None:
     assert settings.fallback_only is True
 
 
-def test_complete_azure_openai_settings_enable_real_agent() -> None:
+def test_complete_deepseek_settings_enable_real_agent() -> None:
     settings = Settings.model_validate(
         {
-            "llm_provider": "azure_openai",
-            "azure_openai_endpoint": "https://example.openai.azure.com",
-            "azure_openai_deployment": "incident-agent",
-            "azure_openai_api_key": "test-key",
+            "llm_provider": "deepseek",
+            "llm_base_url": "https://api.deepseek.com",
+            "llm_model": "deepseek-v4-pro",
+            "llm_api_key": "test-key",
         }
     )
 
@@ -116,14 +111,14 @@ def test_complete_azure_openai_settings_enable_real_agent() -> None:
 
 @pytest.mark.parametrize(
     "missing_field",
-    ["azure_openai_endpoint", "azure_openai_deployment", "azure_openai_api_key"],
+    ["llm_base_url", "llm_model", "llm_api_key"],
 )
-def test_incomplete_azure_openai_settings_use_fallback(missing_field: str) -> None:
+def test_incomplete_deepseek_settings_use_fallback(missing_field: str) -> None:
     values = {
-        "llm_provider": "azure_openai",
-        "azure_openai_endpoint": "https://example.openai.azure.com",
-        "azure_openai_deployment": "incident-agent",
-        "azure_openai_api_key": "test-key",
+        "llm_provider": "deepseek",
+        "llm_base_url": "https://api.deepseek.com",
+        "llm_model": "deepseek-v4-pro",
+        "llm_api_key": "test-key",
     }
     values[missing_field] = ""
 

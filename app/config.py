@@ -28,19 +28,17 @@ class Settings(BaseSettings):
     dashboard_poll_seconds: int = Field(default=30, gt=0)
     database_path: Path = Path("data/incidents.db")
     llm_provider: str = "none"
-    llm_model: str = ""
+    llm_base_url: HttpUrl | None = HttpUrl("https://api.deepseek.com")
+    llm_model: str = "deepseek-v4-pro"
     llm_api_key: SecretStr = SecretStr("")
-    azure_openai_endpoint: HttpUrl | None = None
-    azure_openai_deployment: str = ""
-    azure_openai_api_key: SecretStr = SecretStr("")
     llm_timeout_seconds: int = Field(default=30, gt=0)
     llm_max_retries: int = Field(default=1, ge=0)
     log_level: str = "INFO"
 
-    @field_validator("azure_openai_endpoint", mode="before")
+    @field_validator("llm_base_url", mode="before")
     @classmethod
-    def empty_azure_endpoint_is_unconfigured(cls, value: Any) -> Any:
-        """Treat an empty .env value as an intentionally unconfigured endpoint."""
+    def empty_llm_base_url_is_unconfigured(cls, value: Any) -> Any:
+        """Treat an empty .env value as an intentionally unconfigured base URL."""
         if isinstance(value, str) and not value.strip():
             return None
         return value
@@ -72,12 +70,12 @@ class Settings(BaseSettings):
     @property
     def fallback_only(self) -> bool:
         """Return whether analysis must use the deterministic local fallback."""
-        if self.llm_provider.strip().casefold() != "azure_openai":
+        if self.llm_provider.strip().casefold() != "deepseek":
             return True
         return not all(
             (
-                self.azure_openai_endpoint,
-                self.azure_openai_deployment.strip(),
-                self.azure_openai_api_key.get_secret_value(),
+                self.llm_base_url,
+                self.llm_model.strip(),
+                self.llm_api_key.get_secret_value(),
             )
         )

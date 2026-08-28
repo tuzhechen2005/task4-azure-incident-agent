@@ -12,9 +12,9 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.agents.azure_openai import AzureOpenAIClient
 from app.agents.client import LLMClient
 from app.agents.decision_agent import DecisionAgent
+from app.agents.deepseek import DeepSeekClient
 from app.api.errors import (
     ApplicationError,
     application_error_handler,
@@ -43,13 +43,13 @@ def build_llm_client(settings: Settings) -> LLMClient | None:
     """Build the configured live provider or select deterministic fallback mode."""
     if settings.fallback_only:
         return None
-    if settings.llm_provider.strip().casefold() != "azure_openai":
+    if settings.llm_provider.strip().casefold() != "deepseek":
         return None
-    assert settings.azure_openai_endpoint is not None
-    return AzureOpenAIClient(
-        endpoint=str(settings.azure_openai_endpoint),
-        api_key=settings.azure_openai_api_key.get_secret_value(),
-        deployment=settings.azure_openai_deployment,
+    assert settings.llm_base_url is not None
+    return DeepSeekClient(
+        base_url=str(settings.llm_base_url),
+        api_key=settings.llm_api_key.get_secret_value(),
+        model=settings.llm_model,
     )
 
 
