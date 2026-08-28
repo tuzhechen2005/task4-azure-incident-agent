@@ -51,8 +51,14 @@ class UnavailableRepository:
 def app_settings(*, fallback: bool) -> Settings:
     return Settings.model_validate(
         {
-            "llm_provider": "none" if fallback else "injected-test-provider",
-            "llm_api_key": SecretStr("") if fallback else SecretStr("test-only-key"),
+            "llm_provider": "none" if fallback else "azure_openai",
+            "azure_openai_endpoint": None
+            if fallback
+            else "https://example.openai.azure.com",
+            "azure_openai_deployment": "" if fallback else "incident-agent",
+            "azure_openai_api_key": SecretStr("")
+            if fallback
+            else SecretStr("test-only-key"),
         }
     )
 
@@ -147,10 +153,10 @@ def test_health_fallback_analysis_mode(tmp_path: Path) -> None:
     assert response.json()["analysis_mode"] == "fallback-only"
 
 
-def test_default_runtime_reports_fallback_even_when_provider_is_configured() -> None:
+def test_default_runtime_reports_real_agent_when_provider_is_configured() -> None:
     app = create_app(settings=app_settings(fallback=False))
 
-    assert app.state.analysis_mode == "fallback-only"
+    assert app.state.analysis_mode == "azure_openai"
 
 
 def test_health_database_unavailable() -> None:

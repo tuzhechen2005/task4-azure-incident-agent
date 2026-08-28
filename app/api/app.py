@@ -12,6 +12,8 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.agents.azure_openai import AzureOpenAIClient
+from app.agents.client import LLMClient
 from app.agents.decision_agent import DecisionAgent
 from app.api.errors import (
     ApplicationError,
@@ -37,6 +39,20 @@ class SchedulerLifecycle(Protocol):
     async def stop(self) -> None: ...
 
 
+def build_llm_client(settings: Settings) -> LLMClient | None:
+    """Build the configured live provider or select deterministic fallback mode."""
+    if settings.fallback_only:
+        return None
+    if settings.llm_provider.strip().casefold() != "azure_openai":
+        return None
+    assert settings.azure_openai_endpoint is not None
+    return AzureOpenAIClient(
+        endpoint=str(settings.azure_openai_endpoint),
+        api_key=settings.azure_openai_api_key.get_secret_value(),
+        deployment=settings.azure_openai_deployment,
+    )
+
+
 def _default_dependencies(
     settings: Settings,
 ) -> tuple[IncidentRepository, IngestionScheduler]:
@@ -47,7 +63,7 @@ def _default_dependencies(
         max_retries=settings.rss_max_retries,
     )
     agent = DecisionAgent(
-        client=None,
+        client=build_llm_client(settings),
         timeout_seconds=settings.llm_timeout_seconds,
         max_retries=settings.llm_max_retries,
     )
@@ -67,7 +83,6 @@ def create_app(
 ) -> FastAPI:
     """Create an app with fully injectable persistence and scheduling dependencies."""
     resolved_settings = settings or Settings()
-    uses_bundled_fallback = scheduler is None
     if repository is None or scheduler is None:
         default_repository, default_scheduler = _default_dependencies(resolved_settings)
         repository = repository or default_repository
@@ -93,7 +108,7 @@ def create_app(
     application.state.scheduler = scheduler
     application.state.analysis_mode = (
         "fallback-only"
-        if uses_bundled_fallback or resolved_settings.fallback_only
+        if resolved_settings.fallback_only
         else resolved_settings.llm_provider
     )
 

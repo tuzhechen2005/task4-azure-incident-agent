@@ -7,7 +7,10 @@ from app.logging_config import configure_logging
 settings = Settings()
 configure_logging(
     level=settings.log_level,
-    secrets=[settings.llm_api_key.get_secret_value()],
+    secrets=[
+        settings.llm_api_key.get_secret_value(),
+        settings.azure_openai_api_key.get_secret_value(),
+    ],
 )
 app = create_app(settings=settings)
 

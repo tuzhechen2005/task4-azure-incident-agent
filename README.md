@@ -9,7 +9,7 @@
 - 带超时和有限重试的 RSS／Atom 获取与防御性解析。
 - 将稳定事件标识与内容变化指纹分离。
 - 新事件写入、变化事件重新分析、未变化事件跳过分析。
-- 提供商无关的 Decision Agent 协议、严格结构校验和中文提示词。
+- Azure OpenAI Responses API 真实 Decision Agent、严格 JSON Schema 和中文提示词。
 - 未配置 LLM 或模型失败时，生成确定性的中文保守备用分析。
 - SQLite 原子存储、筛选、分页、统计和重启持久化。
 - 四个本地 API 端点和中文无障碍监控面板。
@@ -41,7 +41,7 @@ flowchart LR
 | 配置与日志 | `app/config.py`、`app/logging_config.py` | 类型化环境配置、安全默认值、密钥脱敏 |
 | 数据采集 | `app/ingestion/` | 获取、解析、清洗、规范化、身份和指纹生成 |
 | 数据结构 | `app/models/schemas.py` | 枚举以及领域／API 校验契约 |
-| Decision Agent | `app/agents/` | 客户端协议、中文输出提示词、严格校验、确定性备用分析 |
+| Decision Agent | `app/agents/` | Azure OpenAI 适配器、客户端协议、中文提示词、严格校验与备用分析 |
 | 数据存储 | `app/storage/` | SQLite 表结构、原子更新、查询、筛选、分页和统计 |
 | 业务编排 | `app/services/incident_service.py` | 去重、条件分析、逐条隔离和周期计数 |
 | 调度 | `app/scheduler.py` | 启动与周期采集、防重叠、生命周期状态 |
@@ -77,7 +77,7 @@ cp .env.example .env
 
 ## 本地运行
 
-默认配置使用纯本地备用分析：`LLM_PROVIDER=none`，`LLM_API_KEY` 留空。
+默认配置使用纯本地备用分析：`LLM_PROVIDER=none`，所有密钥留空。
 
 ```bash
 .venv/bin/python main.py
@@ -85,7 +85,16 @@ cp .env.example .env
 
 浏览器访问 <http://127.0.0.1:8000/>。服务会在启动时执行一次采集，然后按配置的间隔继续运行。按 `Ctrl-C` 可安全停止。
 
-当前交付版本没有捆绑任何厂商 SDK 适配器。`LLMClient` 是提供商无关的扩展边界；本地运行使用经过校验的确定性备用分析。除非已经增加并审查适配器，否则请保持 `LLM_API_KEY` 为空。
+要启用真实 Azure OpenAI 分析，在本地 `.env` 中设置以下内容（不要提交真实值）：
+
+```dotenv
+LLM_PROVIDER=azure_openai
+AZURE_OPENAI_ENDPOINT=https://你的资源名.openai.azure.com
+AZURE_OPENAI_DEPLOYMENT=你的模型部署名
+AZURE_OPENAI_API_KEY=你的密钥
+```
+
+应用使用 Azure OpenAI Responses API 和严格 JSON Schema。配置完整时 `/api/health` 的 `analysis_mode` 为 `azure_openai`；配置缺失、请求失败、限流、超时或输出校验失败时，事件会自动保存为安全的 `FALLBACK` 分析。
 
 ## 离线监控面板演示
 
@@ -117,6 +126,9 @@ LLM_API_KEY= \
 | `LLM_PROVIDER` | `none` | 提供商标识；捆绑运行时仍为备用分析模式 |
 | `LLM_MODEL` | 空 | 可选的模型或部署名称 |
 | `LLM_API_KEY` | 空 | 密钥；为空时启用备用分析 |
+| `AZURE_OPENAI_ENDPOINT` | 空 | Azure OpenAI 资源地址，例如 `https://资源名.openai.azure.com` |
+| `AZURE_OPENAI_DEPLOYMENT` | 空 | Azure 中实际部署的模型名称；API 请求的 `model` 使用此值 |
+| `AZURE_OPENAI_API_KEY` | 空 | Azure OpenAI 密钥；只允许保存在本地 `.env` 或安全环境变量中 |
 | `LLM_TIMEOUT_SECONDS` | `30` | 正数；模型调用超时边界 |
 | `LLM_MAX_RETRIES` | `1` | 非负整数；模型修复／重试次数 |
 | `LOG_LEVEL` | `INFO` | 可选 `CRITICAL`、`ERROR`、`WARNING`、`INFO`、`DEBUG` |
@@ -145,7 +157,7 @@ curl -s 'http://127.0.0.1:8000/api/incidents?severity=SEV-3&page=1&page_size=20'
 
 ## Decision Agent 与提示词策略
 
-系统提示词定义四级严重程度、禁止臆测规则、公共状态局限、简体中文输出要求和严格 JSON 契约。经过校验的 `AgentInput` 会被确定性序列化，并放入明确的不可信数据边界；订阅源正文中的指令不会被执行。模型结果必须是一个 JSON 对象，通过结构校验，并与输入事件 ID 一致。时间、来源和模型元数据由应用代码控制。
+系统提示词定义四级严重程度、禁止臆测规则、公共状态局限、简体中文输出要求和严格 JSON 契约。经过校验的 `AgentInput` 会被确定性序列化，并放入明确的不可信数据边界；订阅源正文中的指令不会被执行。Azure OpenAI Responses API 被要求按严格 JSON Schema 返回一个对象，随后仍会经过 Pydantic 校验并核对事件 ID。时间、来源和模型元数据由应用代码控制。
 
 系统只执行配置数量的修复／重试。JSON 或结构无效、ID 错误、超时、提供商错误、缺少凭据或重试耗尽时，都会生成完整的中文 `FALLBACK` 分析。处理中或监控中的不确定事件默认使用 `SEV-3`；已解决或信息不足的事件默认使用 `SEV-4`，并附带低置信度、核实步骤、升级条件和明确提示。
 
@@ -215,6 +227,6 @@ progress.md          任务节点、问题、决策、验证、提交和推送�
 - 服务和区域提取基于小型已知名称表，策略有意保持保守。
 - 调度器只保护单进程内的任务重叠，不适用于分布式调度。
 - SQLite 和监控面板仅面向本地使用且没有身份验证，不要暴露到不可信网络。
-- 仓库提供 LLM 协议和校验完备的智能体行为，但没有厂商专用生产适配器。
+- 仓库包含 Azure OpenAI Responses API 适配器；真实可用性取决于调用者自己的 Azure 资源、部署权限、配额和本地凭据。
 
 更多设计和交付证据请查看 [SPEC.md](SPEC.md)、[TASKS.md](TASKS.md)、[progress.md](progress.md) 和[项目复盘](docs/RETROSPECTIVE.md)。

@@ -4,10 +4,10 @@
 
 - 项目目标：交付 `SPEC.md` 与 `TASKS.md` 规定的本地 Azure 事件响应智能体和监控面板。
 - 开始时间：2026-08-25（Asia/Shanghai）。
-- 当前状态：已完成。
+- 当前状态：已完成 TASK-017；等待提交与推送记录。
 - 当前分支：`main`。
 - GitHub 仓库：`tuzhechen2005/task4-azure-incident-agent`。
-- 已完成任务：16；剩余任务：0。
+- 已完成任务：17；剩余任务：0。
 
 ## 任务进度
 
@@ -29,6 +29,19 @@
 | TASK-014 | DONE | 可访问中文面板和安全渲染。 | 静态面板检查通过。 |
 | TASK-015 | DONE | 轮询、失败保留与端到端 fixture 流程。 | 轮询、重复、重启持久化通过。 |
 | TASK-016 | DONE | README、复盘、离线演示和交付审计。 | 全量测试、质量检查和验收清单完成。 |
+| TASK-017 | DONE | Azure OpenAI Responses API 适配器、严格 JSON Schema、配置、应用接线与文档。 | RED 按预期失败；160 项 Python、5 项 Node 测试及全部质量检查通过；提交待补录。 |
+
+### TASK-017 详细记录
+
+- 开始/完成时间：2026-08-28（Asia/Shanghai）。
+- RED：`.venv/bin/python -m pytest -q tests/unit/test_azure_openai.py tests/unit/test_config.py tests/integration/test_health_stats_api.py` 在收集阶段因 `app.agents.azure_openai` 不存在而失败，证明真实适配器尚未实现。
+- GREEN：新增 Azure OpenAI Responses API 客户端，以资源 `/openai/v1/` 为 base URL、以部署名为 `model`，发送 system/user prompt 和严格 JSON Schema；将 provider 异常映射到既有安全错误类型；配置完整时应用自动接线，缺失时保持 fallback-only。
+- REFACTOR：以协议注入 SDK 客户端，统一 Endpoint 规范化、输出提取、错误脱敏和响应 schema 构造。
+- 文档：更新 `.env.example`、README、规格和复盘，说明真实模式与离线降级模式。
+- 聚焦测试：32 项通过；完整测试：160 项 Python 与 5 项 Node 通过。
+- 质量检查：Ruff format、Ruff lint、mypy、`node --check`、`pip check` 全部通过。
+- 本地运行：在无凭据且 RSS 不可用时 `/api/health` 返回 `200` 与 `fallback-only`，服务保持可用。
+- 云端验证：当前环境三项 Azure 凭据均未设置，因此没有执行计费的真实云请求；SDK 构造、请求结构、错误映射和应用接线均通过离线测试。
 
 ## 实际问题、踩坑与解决方案
 
@@ -64,13 +77,18 @@
 
 症状：文档测试找不到 `AC-001` 至 `AC-018` 的勾选项。根因是中文化时将详细清单压缩成了概述，破坏了文档的机器可验证契约。解决：恢复全部中文验收项并保留原有 `- [x] AC-XXX` 标记；以后翻译文档时不得删除被测试引用的稳定标识。
 
+### P-009：空 Azure Endpoint 被 URL 校验当作非法值
+
+症状：`.env` 中保留空的 `AZURE_OPENAI_ENDPOINT=` 时配置模型直接报 URL 校验错误，无法进入 fallback-only。根因是可选 URL 字段没有在 Pydantic URL 解析前将空字符串标准化为 `None`。解决：增加 `mode="before"` 字段校验器，并测试 Endpoint、Deployment、Key 任一缺失都会安全进入 fallback。
+
 ## 关键决定
 
 - D-001：在空仓库上初始化 `main`，仓库名与文件夹名均为 `task4-azure-incident-agent`。
 - D-002：使用 Pydantic Settings 管理配置，便于类型校验、环境覆盖与 fallback-only 模式。
 - D-003：使用 SQLite 而非外部数据库，满足本地演示、持久化、去重和查询需求。
 - D-004：将 LLM 放在 `LLMClient` 边界后，默认测试只验证应用行为而不调用真实模型。
+- D-005：真实路径采用 Azure OpenAI Responses API 与严格 JSON Schema；默认离线测试使用可注入假 SDK，真实凭据只放在本地环境。
 
 ## 最终验证
 
-已执行完整离线测试、格式化、lint、类型检查、本地启动、fixture 到 API/面板流程、fallback-only 模式、SQLite 重启持久化以及交付审计。AC-001 至 AC-018 均已记录为通过；交付物不包含 `.env`、秘密、本地数据库、缓存、日志、虚拟环境或生成文件。
+已执行 160 项完整离线 Python 测试、5 项 Node 轮询测试、格式化、lint、类型检查、依赖检查、本地启动、fixture 到 API/面板流程、fallback-only 模式、SQLite 重启持久化以及交付审计。AC-001 至 AC-018 均已记录为通过；交付物不包含 `.env`、秘密、本地数据库、缓存、日志、虚拟环境或生成文件。真实 Azure OpenAI 云请求需要调用者配置自己的资源与凭据，当前环境未执行计费调用。
