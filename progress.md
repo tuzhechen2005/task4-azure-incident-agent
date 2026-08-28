@@ -4,7 +4,7 @@
 
 - 项目目标：交付 `SPEC.md` 与 `TASKS.md` 规定的本地 Azure 事件响应智能体和监控面板。
 - 开始时间：2026-08-25（Asia/Shanghai）。
-- 当前状态：已完成 TASK-017；等待提交与推送记录。
+- 当前状态：已完成 TASK-017；等待推送与最终审计。
 - 当前分支：`main`。
 - GitHub 仓库：`tuzhechen2005/task4-azure-incident-agent`。
 - 已完成任务：17；剩余任务：0。
@@ -29,7 +29,7 @@
 | TASK-014 | DONE | 可访问中文面板和安全渲染。 | 静态面板检查通过。 |
 | TASK-015 | DONE | 轮询、失败保留与端到端 fixture 流程。 | 轮询、重复、重启持久化通过。 |
 | TASK-016 | DONE | README、复盘、离线演示和交付审计。 | 全量测试、质量检查和验收清单完成。 |
-| TASK-017 | DONE | Azure OpenAI Responses API 适配器、严格 JSON Schema、配置、应用接线与文档。 | RED 按预期失败；160 项 Python、5 项 Node 测试及全部质量检查通过；提交待补录。 |
+| TASK-017 | DONE | Azure OpenAI Responses API 适配器、严格 JSON Schema、配置、应用接线与文档。 | RED 按预期失败；160 项 Python、5 项 Node 测试及全部质量检查通过；`3860ff3`。 |
 
 ### TASK-017 详细记录
 
@@ -42,6 +42,7 @@
 - 质量检查：Ruff format、Ruff lint、mypy、`node --check`、`pip check` 全部通过。
 - 本地运行：在无凭据且 RSS 不可用时 `/api/health` 返回 `200` 与 `fallback-only`，服务保持可用。
 - 云端验证：当前环境三项 Azure 凭据均未设置，因此没有执行计费的真实云请求；SDK 构造、请求结构、错误映射和应用接线均通过离线测试。
+- 提交：`3860ff3` — `feat(agent): complete TASK-017 Azure OpenAI integration`。
 
 ## 实际问题、踩坑与解决方案
 
