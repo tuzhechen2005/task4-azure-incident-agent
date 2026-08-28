@@ -2,13 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
+import httpx
 import pytest
 
 from app.ingestion.rss_client import (
     EmptyBodyError,
     HTTPResponse,
     HTTPStatusError,
+    HTTPXTransport,
     NetworkFetchError,
     RSSClient,
     TimeoutFetchError,
@@ -39,6 +42,64 @@ def client(transport: FakeTransport, *, retries: int = 0) -> RSSClient:
         clock=lambda: NOW,
         sleeper=lambda _: None,
     )
+
+
+def test_httpx_transport_preserves_response_and_secure_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_get(url: str, **kwargs: object) -> object:
+        captured["url"] = url
+        captured.update(kwargs)
+        return SimpleNamespace(
+            status_code=200,
+            content=b"<rss />",
+            headers={"content-type": "text/xml"},
+        )
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    result = HTTPXTransport().get(
+        "https://azure.status.microsoft/en-us/status/feed/",
+        timeout=7,
+        headers={"User-Agent": "test-agent"},
+    )
+
+    assert result == HTTPResponse(
+        status_code=200,
+        body=b"<rss />",
+        headers={"content-type": "text/xml"},
+    )
+    assert captured == {
+        "url": "https://azure.status.microsoft/en-us/status/feed/",
+        "timeout": 7,
+        "headers": {"User-Agent": "test-agent"},
+        "follow_redirects": True,
+    }
+    assert "verify" not in captured
+
+
+@pytest.mark.parametrize(
+    ("provider_error", "expected"),
+    [
+        (httpx.ReadTimeout("timed out"), TimeoutError),
+        (httpx.RequestError("network failed"), OSError),
+    ],
+)
+def test_httpx_transport_maps_network_errors(
+    monkeypatch: pytest.MonkeyPatch,
+    provider_error: Exception,
+    expected: type[Exception],
+) -> None:
+    def fake_get(url: str, **kwargs: object) -> object:
+        del url, kwargs
+        raise provider_error
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    with pytest.raises(expected):
+        HTTPXTransport().get("https://example.test/feed", timeout=3, headers={})
 
 
 def test_fetch_valid_feed() -> None:

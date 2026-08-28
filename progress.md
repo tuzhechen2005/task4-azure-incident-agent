@@ -4,10 +4,10 @@
 
 - 项目目标：交付 `SPEC.md` 与 `TASKS.md` 规定的本地 Azure 事件响应智能体和监控面板。
 - 开始时间：2026-08-25（Asia/Shanghai）。
-- 当前状态：已完成 TASK-018；真实智能体已改为直连 DeepSeek V4 Pro。
+- 当前状态：已完成 TASK-019；Azure RSS 与 DeepSeek 真实链路已验证成功。
 - 当前分支：`main`。
 - GitHub 仓库：`tuzhechen2005/task4-azure-incident-agent`。
-- 已完成任务：18；剩余任务：0。
+- 已完成任务：19；剩余任务：0。
 
 ## 任务进度
 
@@ -31,6 +31,29 @@
 | TASK-016 | DONE | README、复盘、离线演示和交付审计。 | 全量测试、质量检查和验收清单完成。 |
 | TASK-017 | DONE | Azure OpenAI Responses API 适配器、严格 JSON Schema、配置、应用接线与文档。 | RED 按预期失败；160 项 Python、5 项 Node 测试及全部质量检查通过；`3860ff3`。 |
 | TASK-018 | DONE | DeepSeek V4 Pro 直连、移除 Azure 托管配置、应用接线与中文文档。 | RED 按预期失败；160 项 Python、5 项 Node 测试及全部质量检查通过。 |
+| TASK-019 | DONE | Azure RSS 安全 HTTPS 传输与真实端到端运行验证。 | 10 项聚焦测试、163 项 Python、5 项 Node、真实微软 RSS、两次 DeepSeek 调用、SQLite、API、面板和重启去重均通过。 |
+
+### TASK-019 实施计划
+
+- 生产文件：仅替换 `app/ingestion/rss_client.py` 的默认 HTTP 传输，保留 `RSSClient` 和既有异常契约。
+- 接口：继续使用 `HTTPTransport.get` 与 `HTTPResponse`，上层采集、解析、调度和 API 无需改变。
+- 测试：先为默认 httpx 传输添加成功、超时、网络异常、请求头、重定向和状态码测试并观察 RED；实现后运行既有 RSS、完整离线测试和真实 RSS 冒烟验证。
+- 风险：微软公共 RSS 在没有广泛事件时会返回合法但无 `<item>` 的 feed，因此真实 RSS 成功只证明采集链；真实 DeepSeek 链路将使用本地受控 feed 和临时数据库单独验证。
+
+### TASK-019 详细记录
+
+- 开始/完成时间：2026-08-29（Asia/Shanghai）。
+- 根因：微软官方 RSS 经 `curl` 返回 HTTP 200，但框架 Python 的 `urllib` 没有正确使用 macOS 信任链，抛出 `SSLCertVerificationError: self-signed certificate in certificate chain`；同一虚拟环境中的 httpx 能在保持 TLS 校验的情况下成功连接。
+- RED：`.venv/bin/python -m pytest -q tests/unit/test_rss_client.py` 在收集阶段因 `HTTPXTransport` 不存在而失败，证明安全替代传输尚未实现。
+- GREEN：新增默认 `HTTPXTransport`，启用安全 TLS 默认值与重定向，将 httpx 超时和网络异常映射回既有 `TimeoutError`/`OSError` 边界；`RSSClient` 的重试、状态码和空正文行为保持不变。
+- REFACTOR：移除仅用于旧传输的 `urllib` 代码，继续复用既有 `HTTPTransport` 与 `HTTPResponse`，上层解析、服务和调度无需改动。
+- 真实 RSS：`https://azure.status.microsoft/en-us/status/feed/` 返回 HTTP 200、577 字节合法 XML、0 条活动事件、0 条解析警告；生产服务最近成功采集时间已更新，`last_error=null`。
+- 真实模型：受控 fixture 通过本地 HTTP 源触发两次 DeepSeek V4 Pro Responses API 调用，均返回 HTTP 200；两条分析均以 `analysis_source=LLM`、`model=deepseek-v4-pro` 写入临时 SQLite。
+- API 与面板：健康、统计、列表、详情、首页和 JavaScript 均返回 200；浏览器实际渲染健康状态、2 条事件、严重度、模型摘要和完整六部分响应预案。
+- 重启验证：复用同一临时数据库后得到 `inserted=0 updated=0 unchanged=2 failed=0`，没有重复调用模型；临时进程已关闭，临时数据已移入系统废纸篓。
+- 完整验证：163 项 Python 与 5 项 Node 测试通过；Ruff format、Ruff lint、mypy、`node --check`、`pip check`、`git diff --check` 和秘密扫描全部通过。
+- 安全：真实 Key 仅从被忽略的 `.env` 读取，命令、日志、测试输出和文档均未显示或保存 Key。
+- 提交：本次 TASK-019 独立 Conventional Commit（hash 见 Git 历史）；按 Goal 要求在提交后推送 `main`。
 
 ### TASK-018 实施计划
 
@@ -106,6 +129,10 @@
 
 症状：首轮 GREEN 中 39 项通过、文档配置测试因 README 缺少 `LLM_BASE_URL` 而失败。根因是代码配置已切换，但中文操作文档仍保留 Azure OpenAI 变量。解决：同步更新 README、`.env.example`、规格和复盘，并由文档测试验证全部环境变量一致。
 
+### P-011：curl 能访问 RSS，但 Python 应用证书校验失败
+
+症状：微软 RSS 经 curl 返回 200，应用却记录 `NetworkFetchError`。根因是当前 framework Python 的 OpenSSL 默认 CA 路径未正确接入 macOS 信任链，`urllib` 因自签名证书链报错。解决：使用项目已有 httpx 作为默认安全传输；其默认 CA 配置在本机验证成功，同时保持 TLS 校验、重定向、超时和异常映射，未使用 `verify=False`。
+
 ## 关键决定
 
 - D-001：在空仓库上初始化 `main`，仓库名与文件夹名均为 `task4-azure-incident-agent`。
@@ -114,7 +141,8 @@
 - D-004：将 LLM 放在 `LLMClient` 边界后，默认测试只验证应用行为而不调用真实模型。
 - D-005：真实路径采用 Azure OpenAI Responses API 与严格 JSON Schema；默认离线测试使用可注入假 SDK，真实凭据只放在本地环境。
 - D-006：根据用户最新要求，Azure 仅作为公共故障数据源；真实 Decision Agent 改为直接调用 DeepSeek V4 Pro Responses API，不再要求 Azure OpenAI 托管层。
+- D-007：RSS 默认传输使用 httpx，而不是依赖 framework Python 不完整 CA 路径的 `urllib`；保持接口可注入且绝不关闭 TLS 校验。
 
 ## 最终验证
 
-已执行 160 项完整离线 Python 测试、5 项 Node 轮询测试、格式化、lint、类型检查、依赖检查、fixture 到 API/面板流程、fallback-only 模式、SQLite 重启持久化以及交付审计。AC-001 至 AC-018 均已记录为通过；交付物不包含 `.env`、秘密、本地数据库、缓存、日志、虚拟环境或生成文件。真实 DeepSeek 云请求需要调用者配置自己的 API Key 和账户额度，当前环境未执行计费调用。
+已执行 163 项完整离线 Python 测试、5 项 Node 轮询测试、格式化、lint、类型检查、依赖检查、真实微软 RSS、真实 DeepSeek 受控事件分析、SQLite 写入与重启去重、四个 API、浏览器面板、fallback-only 模式以及交付审计。AC-001 至 AC-018 均已记录为通过；交付物不包含 `.env`、秘密、本地数据库、缓存、日志、虚拟环境或生成文件。

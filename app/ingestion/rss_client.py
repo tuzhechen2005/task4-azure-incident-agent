@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import time
-import urllib.error
-import urllib.request
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Protocol
+
+import httpx
 
 
 class RSSFetchError(RuntimeError):
@@ -59,28 +59,26 @@ class HTTPTransport(Protocol):
     ) -> HTTPResponse: ...
 
 
-class UrllibTransport:
-    """Standard-library transport used during local application runs."""
+class HTTPXTransport:
+    """Verified HTTPS transport backed by the project's shared HTTP client."""
 
     def get(self, url: str, *, timeout: float, headers: dict[str, str]) -> HTTPResponse:
-        request = urllib.request.Request(url, headers=headers, method="GET")
         try:
-            with urllib.request.urlopen(request, timeout=timeout) as response:
-                return HTTPResponse(
-                    status_code=response.status,
-                    body=response.read(),
-                    headers=dict(response.headers.items()),
-                )
-        except urllib.error.HTTPError as error:
-            return HTTPResponse(
-                status_code=error.code,
-                body=b"",
-                headers=dict(error.headers.items()) if error.headers else {},
+            response = httpx.get(
+                url,
+                timeout=timeout,
+                headers=headers,
+                follow_redirects=True,
             )
-        except urllib.error.URLError as error:
-            if isinstance(error.reason, TimeoutError):
-                raise TimeoutError("RSS request timed out") from error
+        except httpx.TimeoutException as error:
+            raise TimeoutError("RSS request timed out") from error
+        except httpx.RequestError as error:
             raise OSError("RSS network request failed") from error
+        return HTTPResponse(
+            status_code=response.status_code,
+            body=response.content,
+            headers=dict(response.headers),
+        )
 
 
 class RSSClient:
@@ -105,7 +103,7 @@ class RSSClient:
         self._url = url
         self._timeout_seconds = timeout_seconds
         self._max_retries = max_retries
-        self._transport = transport or UrllibTransport()
+        self._transport = transport or HTTPXTransport()
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._sleeper = sleeper or time.sleep
 

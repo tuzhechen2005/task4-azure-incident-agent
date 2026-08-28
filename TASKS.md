@@ -4,7 +4,7 @@
 
 遵循 `AGENTS.md` 与 `SPEC.md`。每次只处理一个任务，并执行 Red–Green–Refactor；在活跃 Goal 中，任务测试与检查通过、状态更新、`progress.md` 更新并创建独立 Conventional Commit 后，自动进入下一个符合依赖的任务。状态为 `TODO`、`IN PROGRESS`、`BLOCKED`、`DONE`；仅在真实阻塞或重大冲突时暂停。
 
-推荐顺序：`TASK-001 → TASK-002 → TASK-003 → TASK-004 → TASK-005 → TASK-006 → TASK-007 → TASK-008 → TASK-009 → TASK-010 → TASK-011 → TASK-012 → TASK-013 → TASK-014 → TASK-015 → TASK-016 → TASK-017 → TASK-018`。
+推荐顺序：`TASK-001 → TASK-002 → TASK-003 → TASK-004 → TASK-005 → TASK-006 → TASK-007 → TASK-008 → TASK-009 → TASK-010 → TASK-011 → TASK-012 → TASK-013 → TASK-014 → TASK-015 → TASK-016 → TASK-017 → TASK-018 → TASK-019`。
 
 | Task | 状态 | 目标、依赖与必需验证 |
 |---|---|---|
@@ -26,6 +26,7 @@
 | TASK-016 | DONE | 文档、复盘与交付审计；依赖全部前置任务。运行完整验证、核对 AC-001 至 AC-018、交付包与秘密扫描。 |
 | TASK-017 | DONE | 接入真实 Azure OpenAI Decision Agent；依赖 007、008、011、016。配置、Responses API 请求、错误映射、应用接线、真实/降级模式和秘密保护均已验证。 |
 | TASK-018 | DONE | 将真实 Decision Agent 改为直连 DeepSeek V4 Pro；依赖 017。已移除 Azure 托管配置，Responses API、配置、应用接线、降级和中文文档均已验证。 |
+| TASK-019 | DONE | 修复 macOS Python 信任链导致的 Azure RSS 连接失败，并完成真实 RSS、DeepSeek、SQLite、API 和面板的端到端验证；依赖 018。 |
 
 每个 Task 的实现文件、验收标准和具体测试名称以代码、提交历史与 `progress.md` 中的已完成记录为准。任何后续变更都必须补充相应测试并按 TDD 创建独立任务或修复提交。
 
@@ -50,3 +51,14 @@
 - **实现要求：** 使用既有可注入 `LLMClient` 和 OpenAI SDK 的 Responses API；默认 Base URL 为 `https://api.deepseek.com`、模型为 `deepseek-v4-pro`；发送 system/user prompt 与严格 JSON Schema；映射超时、限流、认证、连接和空响应错误；仅在 provider、Base URL、模型与 Key 完整时启用真实模式；不得调用真实模型执行默认测试。
 - **验收标准：** `LLM_PROVIDER=deepseek` 且配置完整时创建 DeepSeek 客户端并报告 `deepseek`；无需任何 Azure OpenAI 配置；配置缺失或调用失败时安全 fallback；秘密不进入日志、文档或提交；所有中文文档与实际配置一致。
 - **必需测试：** DeepSeek 默认值和环境覆盖、完整/缺失配置、SDK Base URL 与 Key、请求 schema/模型/超时、输出提取、错误映射、空响应、应用真实接线、fallback 健康状态及文档配置契约。
+
+## TASK-019——修复 Azure RSS 连接并验证完整运行链路
+
+**状态：DONE**
+
+- **目标：** 在不关闭 TLS 证书校验的前提下，使本地 Python 能可靠读取微软官方 Azure 状态 RSS；随后验证真实数据源、真实 DeepSeek、SQLite、FastAPI、监控面板和 fallback 均可运行。
+- **文件：** `app/ingestion/rss_client.py`、`tests/unit/test_rss_client.py`、`README.md`、`SPEC.md`、`TASKS.md`、`progress.md`；如验证发现实际兼容问题，只允许补充直接相关的适配器和测试文件，并记录原因。
+- **依赖：** TASK-003、TASK-004、TASK-009、TASK-015、TASK-018。
+- **实现要求：** 使用项目已有的 `httpx` 作为默认 HTTPS 传输并保持可注入边界；保留超时、有限重试、状态码、空正文和安全错误契约；允许重定向；必须验证 TLS，不得使用 `verify=False` 或未校验 SSL 上下文。
+- **验收标准：** 当前机器可通过应用客户端获取并解析微软官方 RSS；服务启动后最近成功采集时间存在且不再报告 `NetworkFetchError`；使用受控事件源时真实 DeepSeek 返回经 schema 校验的 `LLM` 分析并写入 SQLite；四个 API 和面板资源可访问；失败模式仍安全降级；全部默认测试和质量检查通过；无秘密或运行产物进入提交。
+- **必需测试：** 默认传输成功、重定向配置、请求头与超时、HTTP 状态保留、httpx 超时/网络错误映射、RSSClient 既有成功/重试/错误测试、真实 RSS 可选验证、真实 DeepSeek 受控端到端验证。

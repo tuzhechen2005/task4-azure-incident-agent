@@ -6,7 +6,7 @@
 
 ## 功能概览
 
-- 带超时和有限重试的 RSS／Atom 获取与防御性解析。
+- 使用安全 TLS、重定向、超时和有限重试的 RSS／Atom 获取与防御性解析。
 - 将稳定事件标识与内容变化指纹分离。
 - 新事件写入、变化事件重新分析、未变化事件跳过分析。
 - DeepSeek V4 Pro Responses API 真实 Decision Agent、严格 JSON Schema 和中文提示词。
@@ -39,7 +39,7 @@ flowchart LR
 | 模块 | 路径 | 职责 |
 |---|---|---|
 | 配置与日志 | `app/config.py`、`app/logging_config.py` | 类型化环境配置、安全默认值、密钥脱敏 |
-| 数据采集 | `app/ingestion/` | 获取、解析、清洗、规范化、身份和指纹生成 |
+| 数据采集 | `app/ingestion/` | httpx 安全 HTTPS 获取、解析、清洗、规范化、身份和指纹生成 |
 | 数据结构 | `app/models/schemas.py` | 枚举以及领域／API 校验契约 |
 | Decision Agent | `app/agents/` | DeepSeek 适配器、客户端协议、中文提示词、严格校验与备用分析 |
 | 数据存储 | `app/storage/` | SQLite 表结构、原子更新、查询、筛选、分页和统计 |
@@ -210,6 +210,7 @@ progress.md          任务节点、问题、决策、验证、提交和推送�
 ## 常见问题排查
 
 - 出现 `No module named ...`：使用 `.venv/bin/python`，并重新安装 `requirements.txt`。
+- RSS 显示 `NetworkFetchError`：先用 README 的测试命令确认依赖完整，再验证目标 URL；默认 httpx 传输会正常执行 TLS 证书校验，禁止通过关闭证书验证绕过问题。
 - 启动时配置校验失败：将 `.env` 与 `.env.example` 对比；超时和间隔必须为正数，重试次数不能为负。
 - 本地模式显示“降级”：备用分析开启或 RSS 不可用时属于预期行为，已保存的数据仍可使用。
 - 健康接口返回 `503`：检查 `DATABASE_PATH` 父目录是否可写，并确认路径没有指向目录。
@@ -222,6 +223,7 @@ progress.md          任务节点、问题、决策、验证、提交和推送�
 - 外部内容一律视为不可信数据，会经过清洗、校验并以纯文本渲染。
 - 密钥只能来自环境变量，日志配置会对密钥值进行脱敏。
 - 公共 RSS 是全球信息，格式和 URL 可能变化或延迟，不能替代租户 Service Health。
+- 微软说明公共 Azure 状态页只发布具有广泛影响的事件，因此 feed 合法但没有事件条目是正常状态；更细粒度的租户事件需要 Azure Service Health。
 - 服务和区域提取基于小型已知名称表，策略有意保持保守。
 - 调度器只保护单进程内的任务重叠，不适用于分布式调度。
 - SQLite 和监控面板仅面向本地使用且没有身份验证，不要暴露到不可信网络。
